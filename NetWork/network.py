@@ -117,8 +117,9 @@ def run_play():
         # 将action转化成字符串
         action = step_simulation(action)
         print(action)
-        action_str = ', '.join(str(a) for a in action)
-        print(action_str.encode("utf8"))
+        action_str = '\r\n'.join(str(a) for a in action)
+        # action_str = str(action)
+        # print(action_str.encode("utf8"))
         ser.write(action_str.encode("utf8"))  # 向端口些数据 字符串必须译码
 
 if __name__ == '__main__':
