@@ -83,7 +83,7 @@ int TIM1_UP_IRQHandler(void)
 //		Usart_SendString( USART1, data_str);
 		  Xianfu_Pwm();
 			 
-			Set_Pwm(Res);
+			Set_Pwm(action);
 			
 		//自动起摆步骤1中的滑块边缘保护
 //		if(autorun_step1==0&&(Encoder>=9900||Encoder<=5900))

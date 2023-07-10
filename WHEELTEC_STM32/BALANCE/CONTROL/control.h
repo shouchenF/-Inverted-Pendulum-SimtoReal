@@ -22,6 +22,7 @@ extern int balance;                     //PWM返回值
 extern float Position_Least;
 
 extern int Res;
+extern int action;
 
 int TIM1_UP_IRQHandler(void);
 int Balance(float angle);

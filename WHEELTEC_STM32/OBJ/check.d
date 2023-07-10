@@ -3,7 +3,7 @@
 ..\obj\check.o: ..\SYSTEM\sys\sys.h
 ..\obj\check.o: ..\USER\stm32f10x.h
 ..\obj\check.o: ..\CORE\core_cm3.h
-..\obj\check.o: E:\KeilMDK\ARM\ARMCC\Bin\..\include\stdint.h
+..\obj\check.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 ..\obj\check.o: ..\USER\system_stm32f10x.h
 ..\obj\check.o: ..\USER\stm32f10x_conf.h
 ..\obj\check.o: ..\STM32F10x_FWLib\inc\stm32f10x_adc.h
@@ -33,7 +33,7 @@
 ..\obj\check.o: ..\SYSTEM\delay\delay.h
 ..\obj\check.o: ..\SYSTEM\sys\sys.h
 ..\obj\check.o: ..\SYSTEM\usart\usart.h
-..\obj\check.o: E:\KeilMDK\ARM\ARMCC\Bin\..\include\stdio.h
+..\obj\check.o: D:\Program Files\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 ..\obj\check.o: ..\HARDWARE\LED\led.h
 ..\obj\check.o: ..\HARDWARE\KEY\key.h
 ..\obj\check.o: ..\HARDWARE\OLED\oled.h

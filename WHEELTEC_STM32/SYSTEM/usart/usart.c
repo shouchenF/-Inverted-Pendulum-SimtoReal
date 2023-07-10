@@ -1,12 +1,13 @@
 #include "sys.h"
 #include "usart.h"	
 int Res;
+int action;
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
 #include "includes.h"					//ucos 使用	  
 #endif  
-double action;
+
 //////////////////////////////////////////////////////////////////
 //加入以下代码,支持printf函数,而不需要选择use MicroLIB	  
 #if 1
@@ -112,7 +113,14 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 					if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//接收数据错误,重新开始接收	  
 					}		 
 				}
-			}   		 
+			}
+
+			int value = 0;
+			for (int i = 0; i < (USART_RX_STA&0X3FFF); i++) {
+					value = value * 10 + USART_RX_BUF[i];
+			action = value;
+			
+			}
      } 
 #if SYSTEM_SUPPORT_OS 	//如果SYSTEM_SUPPORT_OS为真，则需要支持OS.
 	OSIntExit();  											 

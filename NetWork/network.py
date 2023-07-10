@@ -60,7 +60,7 @@ def step_simulation(action):
     target = action + offset
     # 关节速度 = 关节初始速度 + 传感器获取速度
     joint_vel[0] = 0.7 * joint_vel[0] + 0.3 * result[1]
-    ctrl[0] = 1500 * (target[0] - result[0]) - 100 * joint_vel[0]
+    ctrl[0] = 150 * (target[0] - result[0]) - 10 * joint_vel[0]
     return ctrl
 
 
@@ -99,7 +99,6 @@ def run_play():
         matches = re.findall(pattern, data_str)
 
         # 将匹配结果转换为浮点数并存放到数组中
-
         if matches:
             result = [float(value) for value in matches[0]]
             last_result = result
@@ -115,7 +114,12 @@ def run_play():
         action = action.detach().cpu().numpy()
         ######### 3、 发送神经网络输出的动作信息 ###########
         # 将action转化成字符串
-        action = step_simulation(action)
+        target = action + offset
+        # 关节速度 = 关节初始速度 + 传感器获取速度
+        joint_vel[0] = 0.7 * joint_vel[0] + 0.3 * result[1]
+        ctrl[0] = 150 * (target[0] - result[0]) - 100 * joint_vel[0]
+
+        action =  ctrl
         print(action)
         action_str = '\r\n'.join(str(a) for a in action)
         # action_str = str(action)
