@@ -105,7 +105,7 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 								{	
 									USART_RX_STA|=0x8000;	//接收完成了
 									int value = 0;
-									for (int i = 0; i < USART_RX_STA; i++) 
+									for (int i = 0; i < (USART_RX_STA-2); i++) 
 									{
 										value = value * 10 + USART_RX_BUF[i];
 									}
