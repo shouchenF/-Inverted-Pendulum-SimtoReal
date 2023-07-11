@@ -100,14 +100,7 @@ void TIM4_IRQHandler(void)
 	}				   
 	TIM4->SR&=~(1<<0);//清除中断标志位 	    
 }
-// 电机的位置
-//u16 Read_Encoder_Angle(u8 TIMX)
-//{
-//	 u16 motor_position;
-//   
-//	 motor_position = ((10000 - Read_Encoder(4))/5000)*0.44;
-//	 return (u16)motor_position;
-//}
+
 float Read_Encoder_Angle(int encoder)
 {
 	float motor_position;
@@ -116,14 +109,7 @@ float Read_Encoder_Angle(int encoder)
 	
 	return (float)motor_position;
 }
-// 电机的速度
-//u16 Read_Encoder_Speed(u8 TIMX)
-//{
-//	  u16 motor_speed;
-//	  motor_speed = ((float)(((10000 - Read_Encoder(4)) - last_Encoder_TIM)/5000)*0.44)*72000000;
-//		last_Encoder_TIM = 10000 - Read_Encoder(4);
-//		return (u16)motor_speed;
-//}
+
 float Read_Encoder_Speed(int encoder)
 {
 	float motor_speed;
@@ -131,3 +117,4 @@ float Read_Encoder_Speed(int encoder)
 	last_Encoder_TIM = 10000 - encoder;
 	return (float)motor_speed;
 }
+

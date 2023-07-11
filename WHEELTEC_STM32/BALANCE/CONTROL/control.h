@@ -21,7 +21,6 @@ extern int balance;                     //PWM返回值
 
 extern float Position_Least;
 
-extern uint16_t action;
 
 int TIM1_UP_IRQHandler(void);
 int Balance(float angle);
@@ -39,3 +38,4 @@ int Mean_Filter(int sensor);
 int Position_PID (int Encoder,int Target);
 int Pre_Position(int Encoder);
 #endif
+

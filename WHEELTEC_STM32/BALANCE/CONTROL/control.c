@@ -67,7 +67,7 @@ int TIM1_UP_IRQHandler(void)
     	Encoder=Read_Encoder(4);             	                   //===更新编码器位置信息	 
       Angle_Balance=Get_Adc_Average(3,10);                     //===更新姿态
 			 
-       Get_D_Angle_Balance();                                   //===获得摆杆角速度
+//       Get_D_Angle_Balance();                                   //===获得摆杆角速度
 		/************串口发送数据*****************/
 		// 数据内容：电机速度、电机位置、角位移传感器速度、角位移传感器的位置
    		motor_position = Read_Encoder_Angle(Encoder);
@@ -79,11 +79,9 @@ int TIM1_UP_IRQHandler(void)
    		sprintf(sensor_position_str, "%.4f", sensor_position);
     	sprintf(sensor_velocity_str, "%.4f", sensor_velocity);
 
-//		sprintf(data_str, "motor_position=%s; motor_velocity=%s; sensor_position=%s; sensor_velocity=%s;\n", motor_position_str, motor_velocity_str, sensor_position_str, sensor_velocity_str);
-//		Usart_SendString( USART1, data_str);
+			Moto = action;
 		  Xianfu_Pwm();
-			 
-			Set_Pwm(action);
+			Set_Pwm(Moto);
 			
 		//自动起摆步骤1中的滑块边缘保护
 //		if(autorun_step1==0&&(Encoder>=9900||Encoder<=5900))
