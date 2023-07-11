@@ -1,7 +1,8 @@
 #include "sys.h"
-#include "usart.h"	
-int Res;
-int action;
+#include "usart.h"
+#include <string.h>
+uint16_t Res;
+uint16_t action;
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
@@ -100,18 +101,24 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 					{
 					if(USART_RX_STA&0x4000)//接收到了0x0d
 						{
-							if(Res!=0x0a)USART_RX_STA=0;//接收错误,重新开始
+							if(Res!=0x0a)
+							{
+								USART_RX_STA=0;//接收错误,重新开始
+								memset(USART_RX_BUF,0,USART_REC_LEN);
+							}	
 							else 
 								{	
 									USART_RX_STA|=0x8000;	//接收完成了
 									int value = 0;
-									for (int i = 0; i < (USART_RX_STA-2); i++) 
+									for (int i = 0; i < ((USART_RX_STA&0X3FFF)-1); i++) 
 									{
 										value = value * 10 + USART_RX_BUF[i];
 									}
-									action = value;
+										action = value;
+										USART_RX_STA=0;
+										memset(USART_RX_BUF,0,USART_REC_LEN);
+									}
 								}
-							}
 					else //还没收到0X0D
 						{	
 							if(Res==0x0d)USART_RX_STA|=0x4000;
@@ -119,7 +126,11 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 								{
 									USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
 									USART_RX_STA++;
-									if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//接收数据错误,重新开始接收	  
+									if(USART_RX_STA>(USART_REC_LEN-1))
+									{
+										USART_RX_STA=0;//接收数据错误,重新开始接收
+										memset(USART_RX_BUF,0,USART_REC_LEN);
+									}
 								}		 
 						}
 					}		
