@@ -30,6 +30,7 @@ void OLED_Clear(void);
 void OLED_DrawPoint(u8 x,u8 y,u8 t);
 void OLED_ShowChar(u8 x,u8 y,u8 chr,u8 size,u8 mode);
 //void OLED_ShowNumber(int x,int y,int num,int len,int size);
+void OLED_ShowFloat(u8 x, u8 y, float num, u8 len, u8 decimal_digits, u8 size);
 void OLED_ShowNumber(u8 x, u8 y, long long num, u8 len, u8 size);
 void OLED_ShowString(u8 x,u8 y,const u8 *p);	 
 void OLED_ShowChinese(u8 x,u8 y,u16 chr,u8 mode);

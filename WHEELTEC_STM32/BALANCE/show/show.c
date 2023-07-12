@@ -39,13 +39,13 @@ void oled_show(void)
 //		OLED_ShowNumber(108,00,Amplitude1,2,12);
 		
     OLED_ShowString(0,00,"M-P:");  
-		OLED_ShowNumber(40,00,(int)(motor_position*100),6,12);
+		OLED_ShowFloat(45,00,motor_position,5,3,12);
 	  OLED_ShowString(0,10,"M-S:");  
-		OLED_ShowNumber(40,10,(int)(motor_velocity*100),6,12);
+		OLED_ShowFloat(45,10,motor_velocity,5,3,12);
 	  OLED_ShowString(0,20,"S-P:");  
-		OLED_ShowNumber(50,20,(int)sensor_position,4,12);
+		OLED_ShowFloat(45,20,sensor_position,5,3,12);
 	  OLED_ShowString(0,30,"S-S:");  
-		OLED_ShowNumber(50,30,(int)sensor_velocity,4,12);
+		OLED_ShowFloat(45,30,sensor_velocity,5,3,12);
 		//=============第2行显示角度PD控制D参数=======================//	
 //		OLED_ShowString(00,10,"M-S");
 //		OLED_ShowNumber(40,10,motor_velocity,3,12);

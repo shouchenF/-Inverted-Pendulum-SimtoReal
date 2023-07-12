@@ -155,7 +155,48 @@ u32 oled_pow(u8 m,u8 n)
 //		}
 //	 	OLED_ShowChar(x+(size/2)*t,y,temp+'0',size,1); 
 //	}
-//} 
+//}
+void OLED_ShowFloat(u8 x, u8 y, float num, u8 len, u8 decimal_digits, u8 size) {
+    u8 t, temp;
+    u8 enshow = 0;
+
+    // 处理负数
+    if (num < 0) {
+        num = -num;
+        OLED_ShowChar(x, y, '-', size, 1);
+        x += size / 2;
+        len--;
+    }
+
+    // 显示整数部分
+    u32 integer_part = (u32)num;
+    for (t = 0; t < len; t++) {
+        temp = (integer_part / oled_pow(10, len - t - 1)) % 10;
+        if (enshow == 0 && t < (len - 1)) {
+            if (temp == 0) {
+                OLED_ShowChar(x + (size / 2) * t, y, ' ', size, 1);
+                continue;
+            } else {
+                enshow = 1;
+            }
+        }
+        OLED_ShowChar(x + (size / 2) * t, y, temp + '0', size, 1);
+    }
+
+    // 显示小数部分
+    if (decimal_digits > 0) {
+        OLED_ShowChar(x + (size / 2) * len, y, '.', size, 1);
+        len++;
+        float decimal_part = num - integer_part;
+        for (t = 0; t < decimal_digits; t++) {
+            decimal_part *= 10;
+            temp = (u8)decimal_part;
+            OLED_ShowChar(x + (size / 2) * (len + t), y, temp + '0', size, 1);
+            decimal_part -= temp;
+        }
+    }
+}
+
 void OLED_ShowNumber(u8 x, u8 y, long long num, u8 len, u8 size) {
     u8 t, temp;
     u8 enshow = 0;
