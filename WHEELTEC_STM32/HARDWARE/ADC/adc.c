@@ -24,6 +24,8 @@ All rights reserved
 作    者：平衡小车之家
 **************************************************************************/
 extern int last_Adc_Average;
+
+
 void Adc_Init(void)
 {    
  	ADC_InitTypeDef ADC_InitStructure; 
@@ -131,6 +133,7 @@ float Get_Adc_Average_Angle(float ADC)
 	Adc_Average = ADC;
 	
 	Adc_Angle = (float)Adc_Average/4096*360;
+	Adc_Angle = Adc_Angle - offset;
 	return (float)Adc_Angle;
 }
 // 角位移传感器的速度
