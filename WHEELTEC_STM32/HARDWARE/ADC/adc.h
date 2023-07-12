@@ -6,7 +6,6 @@
 Ã‘±¶µÍ∆Ã£∫http://shop114407458.taobao.com/
 **************************************************************************/
 #define Battery_Ch 6
-#define offset 90
 
 u16 Get_Adc(u8 ch);
 u16 Get_Adc2(u8 ch);

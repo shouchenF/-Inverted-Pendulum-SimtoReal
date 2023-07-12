@@ -133,7 +133,7 @@ float Get_Adc_Average_Angle(float ADC)
 	Adc_Average = ADC;
 	
 	Adc_Angle = (float)Adc_Average/4096*360;
-	Adc_Angle = Adc_Angle - offset;
+	Adc_Angle = Adc_Angle;
 	return (float)Adc_Angle;
 }
 // 角位移传感器的速度
