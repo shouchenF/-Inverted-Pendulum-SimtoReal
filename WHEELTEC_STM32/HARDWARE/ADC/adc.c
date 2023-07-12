@@ -122,7 +122,55 @@ u16 Get_Adc_Average(u8 ch,u8 times)
 		delay_us(200);
 	}
 	return temp_val/times;
+}
+
+u16* Get_Adc_Array(u8 ch,u16 arr[], int size)
+{
+	u8 t;
+	for(t=0;t<size;t++)
+	{
+		arr[t]=Get_Adc(ch);
+		delay_us(200);
+	}
+	return arr;
 } 
+
+int medianFilter(u16 signal[], int size, int windowSize) {
+    int result;
+
+    // 窗口大小必须为奇数
+    if (windowSize % 2 == 0 || windowSize <= 1) {
+        printf("窗口大小必须为奇数且大于1。\n");
+        return -1; // 返回错误码
+    }
+
+    int halfWindow = windowSize / 2;
+    int window[windowSize];
+
+    for (int i = halfWindow; i < size - halfWindow; i++) {
+        // 提取窗口内的采样数据
+        for (int j = 0; j < windowSize; j++) {
+            window[j] = signal[i + j - halfWindow];
+        }
+
+        // 对窗口内的采样数据进行排序
+        for (int j = 0; j < windowSize - 1; j++) {
+            for (int k = 0; k < windowSize - j - 1; k++) {
+                if (window[k] > window[k + 1]) {
+                    int temp = window[k];
+                    window[k] = window[k + 1];
+                    window[k + 1] = temp;
+                }
+            }
+        }
+
+        // 取排序后的中间值作为滤波结果
+        result = window[windowSize / 2];
+    }
+
+    return result;
+}
+
 // 角位移传感器的角度	 
 float Get_Adc_Average_Angle(float ADC)
 {

@@ -20,6 +20,7 @@ extern int balance;                     //PWM返回值
 
 
 extern float Position_Least;
+extern u16 arr[20];
 
 
 int TIM1_UP_IRQHandler(void);

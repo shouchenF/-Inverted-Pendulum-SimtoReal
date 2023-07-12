@@ -12,6 +12,8 @@ u16 Get_Adc2(u8 ch);
 int Get_battery_volt(void);   
 void Adc_Init(void);  
 u16 Get_Adc_Average(u8 ch,u8 times);
+u16* Get_Adc_Array(u8 ch,u16 arr[], int size);
+int medianFilter(u16 signal[], int size, int windowSize);
 float Get_Adc_Average_Angle(float ADC);
 float Get_Adc_Average_Speed(float ADC);
 #endif 

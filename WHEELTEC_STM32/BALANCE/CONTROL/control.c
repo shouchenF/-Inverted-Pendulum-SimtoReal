@@ -16,7 +16,8 @@ Update：2021-12-09
 
 All rights reserved
 ***********************************************/
-#include "control.h"		
+#include "control.h"
+		
 int Balance_Pwm,Position_Pwm; //目标角度PWM、目标位置PWM
 u8 Position_Target;//用于标记位置控制的时间
 u8 Swing_up=1; //用于标记手动起摆时，是否是第一次进入手动起摆函数
@@ -51,6 +52,8 @@ long D_Count;//用于辅助获取摆杆角度变化率的中间变量
 float Last_Angle_Balance; //用于获取摆杆角度变化率函数中，保存上一次角度
 
 u8 left,right;
+
+u16 arr[20];
 /**************************************************************************
 函数功能：所有的控制代码都在这里面
           TIM1控制的5ms定时中断 
@@ -65,7 +68,9 @@ int TIM1_UP_IRQHandler(void)
 				 if(++delay_50==10)	 delay_50=0,delay_flag=0;          //===给主函数提供50ms的精准延时  10次*5ms = 50ms
 			 }		
     	Encoder=Read_Encoder(4);             	                   //===更新编码器位置信息	 
-      Angle_Balance=Get_Adc_Average(3,10);                     //===更新姿态
+//      Angle_Balance=Get_Adc_Average(3,10);                     //===更新姿态
+			Get_Adc_Array(3,arr,10);
+			Angle_Balance = medianFilter(arr, 15, 15);
 			 
 //       Get_D_Angle_Balance();                                   //===获得摆杆角速度
 		/************串口发送数据*****************/
