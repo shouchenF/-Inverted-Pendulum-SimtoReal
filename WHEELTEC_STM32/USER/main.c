@@ -34,8 +34,6 @@ float Menu=1,Amplitude1=5,Amplitude2=20,Amplitude3=1,Amplitude4=10; //PID调试�
 
 uint16_t receive_str;
 
-int last_Adc_Average = 0;
-int last_Encoder_TIM = 0;
 
 int main(void)
 {

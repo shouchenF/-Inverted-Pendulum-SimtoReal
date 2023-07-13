@@ -7,6 +7,11 @@
 **************************************************************************/
 #define Battery_Ch 6
 
+extern int last_Adc_Average;
+extern int last_Adc;
+extern int total_Adc;
+extern int circle; 
+
 u16 Get_Adc(u8 ch);
 u16 Get_Adc2(u8 ch);
 int Get_battery_volt(void);   

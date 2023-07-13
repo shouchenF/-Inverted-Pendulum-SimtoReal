@@ -22,7 +22,7 @@ All rights reserved
 入口参数：无
 返回  值：无
 **************************************************************************/
-extern int last_Encoder_TIM;
+float last_Encoder_TIM = 0;
 
 void Encoder_Init_TIM4(void)
 {
