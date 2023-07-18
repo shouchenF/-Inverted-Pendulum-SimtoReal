@@ -68,9 +68,9 @@ int TIM1_UP_IRQHandler(void)
 				 if(++delay_50==10)	 delay_50=0,delay_flag=0;          //===给主函数提供50ms的精准延时  10次*5ms = 50ms
 			 }		
     	Encoder=Read_Encoder(4);             	                   //===更新编码器位置信息	 
-//      Angle_Balance=Get_Adc_Average(3,10);                     //===更新姿态
-			Get_Adc_Array(3,arr,10);
-			Angle_Balance = medianFilter(arr, 15, 15);
+      Angle_Balance=Get_Adc_Average(3,10);                     //===更新姿态
+//			Get_Adc_Array(3,arr,10);
+//			Angle_Balance = medianFilter(arr, 15, 15);
 			 
 //       Get_D_Angle_Balance();                                   //===获得摆杆角速度
 		/************串口发送数据*****************/
@@ -89,8 +89,8 @@ int TIM1_UP_IRQHandler(void)
 			Set_Pwm(Moto);
 			
 		//自动起摆步骤1中的滑块边缘保护
-//		if(autorun_step1==0&&(Encoder>=9900||Encoder<=5900))
-//			Set_Pwm(0),Flag_Stop=1;		
+			if(Encoder>10000||Encoder<=6100)
+				Set_Pwm(0);	
 	}
 			
     //   if(auto_run==1) //自动起摆模式

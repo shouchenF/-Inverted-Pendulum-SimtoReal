@@ -185,22 +185,23 @@ float Get_Adc_Average_Angle(float ADC)
 	
 	Adc_Angle = (float)Adc_Average/4096*360;
 	
+	if((Adc_Angle - last_Adc) < -180)
+	{
+		++circle;
+	}
+	
+	if((Adc_Angle - last_Adc) > 180)
+	{
+		--circle;
+	}	
+	
 	if(Adc_Angle > last_Adc)
 	{
-		if(Adc_Angle > last_Adc && Adc_Angle == 350)
-		{
-			total_Adc = Adc_Angle + 360*(circle++);
-			last_Adc = Adc_Angle;
-			return total_Adc;
-		}
 		total_Adc = Adc_Angle + 360*circle;
 	}
-	else if(Adc_Angle < last_Adc)
+	
+	if(Adc_Angle < last_Adc)
 	{		
-		if(Adc_Angle < last_Adc && Adc_Angle == 350)
-		{
-			--circle;
-		}
 		total_Adc = Adc_Angle + 360*circle;
 	}
 	last_Adc = Adc_Angle;
