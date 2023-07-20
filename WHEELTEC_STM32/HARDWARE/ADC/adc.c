@@ -23,11 +23,14 @@ All rights reserved
 返回  值：无
 作    者：平衡小车之家
 **************************************************************************/
-int last_Adc_Average = 0;
-int last_Adc = 0;
-int total_Adc = 0;
-int circle = 0; 
-
+int adc_c									= 1035;
+int adc_pre 							= 1035;
+float angle_pre 					= 0;
+float angle_c 						= 0;
+float angle_total 				= 0;
+float angle_total_pre 		= 0;
+int circle 								= 0;
+float speed								= 0;
 
 void Adc_Init(void)
 {    
@@ -171,53 +174,40 @@ int medianFilter(u16 signal[], int size, int windowSize) {
         result = window[windowSize / 2];
     }
 
-    return result;
+		return result;
 }
 
 // 角位移传感器的角度	 
-float Get_Adc_Average_Angle(float ADC)
+float Get_Adc_Average_Angle(float adc)
 {
+	adc_c = adc;
+	if(100 < myabs(adc_c - adc_pre) && myabs(adc_c - adc_pre)< 4000)
+	{
+		adc_c = 4096;
+	}
+	adc_pre = adc_c;
+	angle_c = (float)((adc_c/4096.0f*360.0f)-90.0f);
 	
-	float Adc_Average;
-	int Adc_Angle;
- 
-	Adc_Average = ADC;
-	
-	Adc_Angle = (float)Adc_Average/4096*360;
-	
-	if((Adc_Angle - last_Adc) < -180)
+	if((angle_c - angle_pre) < -180)
 	{
 		++circle;
 	}
 	
-	if((Adc_Angle - last_Adc) > 180)
+	if((angle_c - angle_pre) > 180)
 	{
 		--circle;
 	}	
-	
-	if(Adc_Angle > last_Adc)
-	{
-		total_Adc = Adc_Angle + 360*circle;
-	}
-	
-	if(Adc_Angle < last_Adc)
-	{		
-		total_Adc = Adc_Angle + 360*circle;
-	}
-	last_Adc = Adc_Angle;
-	return total_Adc;
+	angle_total = angle_c + 360*circle;
+	angle_pre = angle_c;
+	return angle_total;
 }
+
 // 角位移传感器的速度
-float Get_Adc_Average_Speed(float ADC)
+float Get_Adc_Average_Speed(void)
 {
-
-	float Adc_Average;
-	float Adc_Speed;
-
-	Adc_Average = ADC;
-	Adc_Speed = (float)(Adc_Average-last_Adc_Average)/4096*360*200;
-	last_Adc_Average = Adc_Average;
-	return (float)Adc_Speed;
+	speed = (float)((angle_total - angle_total_pre)*200.0f);
+	angle_total_pre = angle_total;
+	return speed;
 }
 
 

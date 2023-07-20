@@ -85,7 +85,7 @@ extern u8 Flag_Stop,delay_50,delay_flag;         //停止标志位 50ms精准演示标志位
 extern int Encoder,Position_Zero;            //编码器的脉冲计数
 extern int Moto;                                   //电机PWM变量 应是Motor的 向Moto致敬	
 extern int Voltage;                                //电池电压采样相关的变量
-extern float Angle_Balance;                        //角位移传感器数据
+extern float Adc;                        //角位移传感器数据
 extern float motor_position, motor_velocity, sensor_position, sensor_velocity;
 
 

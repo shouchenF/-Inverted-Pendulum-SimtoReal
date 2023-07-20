@@ -114,7 +114,7 @@ void oled_show(void)
 		OLED_ShowString(80,50,"P:");    
 		OLED_ShowNumber(95,50,Encoder,5,12); 
 		OLED_ShowString(0,50,"ADC:"); // :=5  
-		OLED_ShowNumber(30,50,Angle_Balance,4,12);
+		OLED_ShowNumber(30,50,Adc,4,12);
 		//=============刷新=======================//
 		OLED_Refresh_Gram();	
 	}
@@ -127,7 +127,7 @@ void oled_show(void)
 **************************************************************************/
 void DataScope(void)
 {   
-		DataScope_Get_Channel_Data( Angle_Balance, 1 );      
+		DataScope_Get_Channel_Data( Adc, 1 );      
 		DataScope_Get_Channel_Data( Encoder, 2 );         
 		DataScope_Get_Channel_Data( 0, 3 );              
 		DataScope_Get_Channel_Data(motor_position , 4 );   
@@ -344,7 +344,7 @@ void step_3(void)
 	OLED_ShowChar(24,40,'A',16,1);
 	OLED_ShowChar(32,40,'D',16,1);
 	OLED_ShowChar(40,40,'C',16,1);
-  OLED_ShowNumber(78,40,Angle_Balance,4,16);
+  OLED_ShowNumber(78,40,Adc,4,16);
 	OLED_Refresh_Gram();
 }
 
@@ -379,7 +379,7 @@ void check_display(void)
 	OLED_ShowChar(24,48,'A',16,1);
 	OLED_ShowChar(32,48,'D',16,1);
 	OLED_ShowChar(40,48,'C',16,1);
-  OLED_ShowNumber(78,48,Angle_Balance,4,16);
+  OLED_ShowNumber(78,48,Adc,4,16);
 	OLED_Refresh_Gram();
 }
 

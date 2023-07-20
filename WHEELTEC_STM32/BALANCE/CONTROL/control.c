@@ -62,80 +62,37 @@ int TIM1_UP_IRQHandler(void)
 {    
 	if(TIM_GetITStatus(TIM1, TIM_IT_Update) != RESET) //检查指定的TIM中断发生与否:TIM 中断源 //5ms定时中断
 	{   
-		 TIM_ClearITPendingBit(TIM1, TIM_IT_Update  );             //===清除定时器1中断标志位	                     
-	     if(delay_flag==1)
-			 {
-				 if(++delay_50==10)	 delay_50=0,delay_flag=0;          //===给主函数提供50ms的精准延时  10次*5ms = 50ms
-			 }		
-    	Encoder=Read_Encoder(4);             	                   //===更新编码器位置信息	 
-      Angle_Balance=Get_Adc_Average(3,10);                     //===更新姿态
-//			Get_Adc_Array(3,arr,10);
-//			Angle_Balance = medianFilter(arr, 15, 15);
-			 
-//       Get_D_Angle_Balance();                                   //===获得摆杆角速度
-		/************串口发送数据*****************/
-		// 数据内容：电机速度、电机位置、角位移传感器速度、角位移传感器的位置
-   		motor_position = Read_Encoder_Angle(Encoder);
-		  motor_velocity = Read_Encoder_Speed(Encoder);
-		  sensor_position = Get_Adc_Average_Angle(Angle_Balance);
-		  sensor_velocity = Get_Adc_Average_Speed(Angle_Balance);
-			sprintf(motor_position_str, "%.4f", motor_position);
-    	sprintf(motor_velocity_str, "%.4f", motor_velocity);
-   		sprintf(sensor_position_str, "%.4f", sensor_position);
-    	sprintf(sensor_velocity_str, "%.4f", sensor_velocity);
+	 TIM_ClearITPendingBit(TIM1, TIM_IT_Update  );             //===清除定时器1中断标志位	                     
+		 if(delay_flag==1)
+		 {
+			 if(++delay_50==10)	 delay_50=0,delay_flag=0;          //===给主函数提供50ms的精准延时  10次*5ms = 50ms
+		 }		
+		Encoder=Read_Encoder(4);             	                   //===更新编码器位置信息	 
+		Adc=Get_Adc_Average(3,10);                     //===更新姿态
+//		Get_Adc_Array(3,arr,10);
+//		Angle_Balance = medianFilter(arr, 15, 15);
+		 
+//  	Get_D_Angle_Balance();                                   //===获得摆杆角速度
+	/************串口发送数据*****************/
+	// 数据内容：电机速度、电机位置、角位移传感器速度、角位移传感器的位置
+		motor_position = Read_Encoder_Angle(Encoder);
+		motor_velocity = Read_Encoder_Speed(Encoder);
+		sensor_position = Get_Adc_Average_Angle(Adc);
+		sensor_velocity = Get_Adc_Average_Speed();
+		sprintf(motor_position_str, "%.4f", motor_position);
+		sprintf(motor_velocity_str, "%.4f", motor_velocity);
+		sprintf(sensor_position_str, "%.4f", sensor_position);
+		sprintf(sensor_velocity_str, "%.4f", sensor_velocity);
 
-			Moto = action;
-		  Xianfu_Pwm();
-			Set_Pwm(Moto);
-			
-		//自动起摆步骤1中的滑块边缘保护
-			if(Encoder>10000||Encoder<=6100)
-				Set_Pwm(0);	
+		Moto = action;
+		Xianfu_Pwm();
+		Set_Pwm(Moto);
+		
+	//自动起摆步骤1中的滑块边缘保护
+		if(Encoder>10000||Encoder<=6100)
+			Set_Pwm(0);	
 	}
-			
-    //   if(auto_run==1) //自动起摆模式
-    //   {
-	// 			if(Flag_Stop==0)
-	// 			{
-					
-	// 				Find_Zero();//起摆第0步，在边缘回到中点。函数内部实现只执行一次功能
-	// 				if(autorun_step0==1) Auto_run();//执行自动起摆			
-	// 				Xianfu_Pwm();
-					
-	// 				//自动起摆步骤1中的滑块边缘保护
-	// 				if(autorun_step1==0&&(Encoder>=9900||Encoder<=5900))
-	// 				Set_Pwm(0),Flag_Stop=1;		
-
-					
-	// 				//起摆成功后的角度保护，边缘保护
-	// 				if((success_flag==1)&&((!((Angle_Balance>ANGLE_MIDDLE-600)&&(Angle_Balance<ANGLE_MIDDLE+600))) ||(Encoder>=9900||Encoder<=5900)))
-    //       Set_Pwm(0),Flag_Stop=1;
-					
-	// 				else
-	// 				Set_Pwm(Moto);
-	// 			}
-
-	// 		}						 
-	// 	  if(auto_run==0)
-    //   {
-	// 			Turn_Off(Voltage);//倾角、电压保护
-	// 			if(Swing_up==0) Position_Zero=Encoder,Last_Position=0,Last_Bias=0,Position_Target=0,Swing_up=1;
-				
-	// 			if(Flag_Stop==0)
-	// 			{
-	// 				Balance_Pwm =Balance(Angle_Balance);                                          //===角度PD控制	
-	// 				if(++Position_Target>4) Position_Pwm=Position(Encoder),Position_Target=0;    //===位置PD控制 25ms进行一次位置控制
-	// 				Moto=Balance_Pwm-Position_Pwm;      //===计算电机最终PWM
-	// 			  Xianfu_Pwm(),                         //===PWM限幅 防止占空比100%带来的系统不稳定因素
-	// 	      Set_Pwm(Moto);                      //===赋值给PWM寄存器				
-	// 			}
-
-	// 		}
-    //    if(Flag_Stop==1)	
-	// 		 Set_Pwm(0);
-	// 	}	
-    // if(Flag_Stop==0)	Led_Flash(100);      //===LED闪烁指示系统正常运行 
-  	Voltage=Get_battery_volt();           //===获取电池电压	      
+  Voltage=Get_battery_volt();           //===获取电池电压	      
 	Key();                                //===扫描按键变化    	
 	return 0;	  
 } 
@@ -262,7 +219,7 @@ u8 Turn_Off(int voltage)
 			else
       temp=0;
 				
-			if(!(Angle_Balance>(ZHONGZHI-500)&&Angle_Balance<(ZHONGZHI+500))||(voltage<700))
+			if(!(Adc>(ZHONGZHI-500)&&Adc<(ZHONGZHI+500))||(voltage<700))
 			{
 				Flag_Stop=1;
 				temp=1;
@@ -300,7 +257,7 @@ if(autorun_step0==0)  //回到中位
 
 	 
 	 //顺摆pid控制，让摆杆尽快稳定下来（目标角度是起始角，目标位置是起始位置）
-		Balance_Pwm=Balance(Angle_Balance+2070)/8;   //倾角PD控制						
+		Balance_Pwm=Balance(Adc+2070)/8;   //倾角PD控制						
 		Position_Pwm=Pre_Position(Encoder);
  
 	 //如果偏离了中点太多，开始PID控制缓慢调整
@@ -309,8 +266,8 @@ if(autorun_step0==0)  //回到中位
 
  //判断角度和位置是否在原始位置，如果 检测到200次 在原始位置，即可以等待起摆 
  //等待起摆：把刚刚用过的标志位、电机pwm值全部清零，更新Target_Position=POSITION_MIDDL-668，这是自起摆时的第一个目标点，使autorun_step0=1不要再进入这个函数
-		if(Angle_Balance<(ANGLE_ORIGIN+300)&&Angle_Balance>(ANGLE_ORIGIN-300)&&(Encoder>(POSITION_MIDDLE-50)&&Encoder<(POSITION_MIDDLE+50)))  count++;
-		if(Angle_Balance<(ANGLE_ORIGIN+300)&&Angle_Balance>(ANGLE_ORIGIN-300))count+=0.1;
+		if(Adc<(ANGLE_ORIGIN+300)&&Adc>(ANGLE_ORIGIN-300)&&(Encoder>(POSITION_MIDDLE-50)&&Encoder<(POSITION_MIDDLE+50)))  count++;
+		if(Adc<(ANGLE_ORIGIN+300)&&Adc>(ANGLE_ORIGIN-300))count+=0.1;
 		if(count>200)	autorun_step0=1,autorun_step1=0,Moto=0,Target_Position=POSITION_MIDDLE-668;//摆杆运动到中间位置，停止 //设置目标位置，准备甩杆
 	 }
 	 
@@ -333,7 +290,7 @@ void Auto_run(void)
 	if(autorun_step1==0)  //自动起摆第一步   （第一次执行，一定是进入这里）
 	{
 			 //判断应该往哪一边换向						
-			if((Angle_Balance>(ANGLE_ORIGIN-120)&&Angle_Balance<(ANGLE_ORIGIN+120)))
+			if((Adc>(ANGLE_ORIGIN-120)&&Adc<(ANGLE_ORIGIN+120)))
 			{
 				if(D_Angle_Balance<=0) right=1;
 				else if(D_Angle_Balance>0) left=1;
@@ -342,7 +299,7 @@ void Auto_run(void)
 			//判断当摆杆回到初始位置时应该给出速度和位移
 			if(left==1)
 			{
-				if((Angle_Balance>(ANGLE_ORIGIN-50)&&Angle_Balance<(ANGLE_ORIGIN+50)))
+				if((Adc>(ANGLE_ORIGIN-50)&&Adc<(ANGLE_ORIGIN+50)))
 				{
 					left=0;
 					Target_Position=POSITION_MIDDLE+800;
@@ -352,7 +309,7 @@ void Auto_run(void)
 
 			else if(right==1)
 			{
-				if((Angle_Balance>(ANGLE_ORIGIN-50)&&Angle_Balance<(ANGLE_ORIGIN+50)))
+				if((Adc>(ANGLE_ORIGIN-50)&&Adc<(ANGLE_ORIGIN+50)))
 				{
 					right=0;
 					Target_Position=POSITION_MIDDLE-482;
@@ -364,13 +321,13 @@ void Auto_run(void)
 	  	 Moto=Position_PID(Encoder,Target_Position); 
 			
 		 //摆杆已经到达过平衡点附近，开始缓慢调节阶段。
-			if(Angle_Balance<(ANGLE_MIDDLE+385)&&Angle_Balance>(ANGLE_MIDDLE-385)) 
+			if(Adc<(ANGLE_MIDDLE+385)&&Adc>(ANGLE_MIDDLE-385)) 
 			{
 				speed++;
 			}
 
 			//判断当前情况是否符合起摆：起摆要素：位置不在边缘、角度在平衡点附近、角速度接近于0
-			if(Angle_Balance<(ANGLE_MIDDLE+120)&&Angle_Balance>(ANGLE_MIDDLE-120)&&(Encoder>6300&&Encoder<9300)&&(D_Angle_Balance>-30&&D_Angle_Balance<30))
+			if(Adc<(ANGLE_MIDDLE+120)&&Adc>(ANGLE_MIDDLE-120)&&(Encoder>6300&&Encoder<9300)&&(D_Angle_Balance>-30&&D_Angle_Balance<30))
 			{
 				speed++;
 				success_count++;		
@@ -395,7 +352,7 @@ void Auto_run(void)
 		{	
 			
 			 if(wait_count==0) Position_Zero=Encoder;//起摆前，先获取当前位置作为平衡的目标点
-			 Balance_Pwm =Balance(Angle_Balance);                                          //===角度PD控制	
+			 Balance_Pwm =Balance(Adc);                                          //===角度PD控制	
 			 if(++Position_Target>4)   Position_Pwm=Position(Encoder),Position_Target=0;    //===位置PD控制 25ms进行一次位置控制
 			
 			
@@ -460,9 +417,9 @@ void Get_D_Angle_Balance(void)
 {
 		if(++D_Count>5) //获取角度变化率，差分 时间常数25ms
 		{
-			D_Angle_Balance=Mean_Filter(Angle_Balance-Last_Angle_Balance);	//平滑滤波得到噪声更小的摆杆角速度信息		
+			D_Angle_Balance=Mean_Filter(Adc-Last_Angle_Balance);	//平滑滤波得到噪声更小的摆杆角速度信息		
 //			D_Angle_Balance=Angle_Balance-Last_Angle_Balance;	//得到摆杆角速度信息		
-			Last_Angle_Balance=Angle_Balance; //保存历史数据
+			Last_Angle_Balance=Adc; //保存历史数据
 			D_Count=0;	//计数器清零
 		}
 }
