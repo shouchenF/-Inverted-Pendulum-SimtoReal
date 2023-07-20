@@ -87,58 +87,89 @@ void uart_init(u32 bound){
 
 }
 
+// 奇偶校验
+int16_t count_odd_numbers(int16_t a) // a:数据起始位，b:数据长度
+{
+    int16_t odd_count = 0;
+    int16_t even_count = 0;
+    for (int16_t i = a; i < (USART_RX_STA&0X3FFF); i++) {	
+				if(USART_RX_BUF[i] >= '0' && USART_RX_BUF[i] <= '9' )
+				{						
+						if ((USART_RX_BUF[i] - '0') % 2 == 0) {
+								even_count++;
+						} else {
+								odd_count++;
+						}
+				}   
+	}
+	return odd_count;		
+}
+
+
 void USART1_IRQHandler(void)                	//串口1中断服务程序
 	{
-	
-#if SYSTEM_SUPPORT_OS 		//如果SYSTEM_SUPPORT_OS为真，则需要支持OS.
-	OSIntEnter();    
-#endif
+	 uint16_t check_flag;
+
 	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
 		{
-			Res = USART_ReceiveData(USART1);	//读取接收到的数据
-			
-			if((USART_RX_STA&0x8000)==0)//接收未完成
+		Res = USART_ReceiveData(USART1);	//读取接收到的数据 0x2D，0x31，0x30，0x30，0x30，0x0D，0x0A
+
+				if((USART_RX_STA&0x8000)==0)//接收未完成
 					{
-					if(USART_RX_STA&0x4000)//接收到了0x0d
+					if(USART_RX_STA&0x4000)//接收到了0x0D
 						{
-							if(Res!=0x0a)
-							{
+							if(Res!=0x0A){
 								USART_RX_STA=0;//接收错误,重新开始
 								memset(USART_RX_BUF,0,USART_REC_LEN);
-							}	
-							else 
-								{	
-									USART_RX_STA|=0x8000;	//接收完成了
-									int value = 0;
-									for (int i = 0; i < ((USART_RX_STA&0X3FFF)-1); i++) 
-									{
-										value = value * 10 + USART_RX_BUF[i];
-									}
-										action = value;
-										USART_RX_STA=0;
-										memset(USART_RX_BUF,0,USART_REC_LEN);
-									}
-								}
+							}
+							else{
+								USART_RX_STA|=0x8000;	//接收完成了
+								
+								check_flag = count_odd_numbers(2);
+								USART_RX_BUF[1] = USART_RX_BUF[1] - '0';
+								if(USART_RX_BUF[0] == '\t'&& USART_RX_BUF[1] == check_flag ) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
+								{
+									int16_t value = 0;
+									int16_t sign = 1;
+										int a = 2;
+										if(USART_RX_BUF[2] == '-')
+										{
+											sign = -1;
+											a = 3;
+										}
+											for (int i = a; i < (USART_RX_STA&0X3FFF); i++) {
+												value = value * 10 + USART_RX_BUF[i] - '0';	
+											}
+											action = sign * value ;
+
+											USART_RX_STA = 0;	
+											memset(USART_RX_BUF,0,USART_REC_LEN);
+							}
+							else{
+								USART_RX_STA = 0;	
+								memset(USART_RX_BUF,0,USART_REC_LEN);
+							}
+						}								
+						}
 					else //还没收到0X0D
 						{	
-							if(Res==0x0d)USART_RX_STA|=0x4000;
+							if(Res==0x0D)
+								USART_RX_STA|=0x4000;
 							else
-								{
-									USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
-									USART_RX_STA++;
-									if(USART_RX_STA>(USART_REC_LEN-1))
-									{
-										USART_RX_STA=0;//接收数据错误,重新开始接收
-										memset(USART_RX_BUF,0,USART_REC_LEN);
-									}
+								{					
+										USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
+										USART_RX_STA++;
+										if(USART_RX_STA>(USART_REC_LEN-1))
+										{
+											USART_RX_STA=0;//接收数据错误,重新开始接收
+											memset(USART_RX_BUF,0,USART_REC_LEN);
+										}					
 								}		 
 						}
-					}		
-			} 
-#if SYSTEM_SUPPORT_OS 	//如果SYSTEM_SUPPORT_OS为真，则需要支持OS.
-	OSIntExit();  											 
-#endif
-	} 
+					}
+
+				 } 
+}
 	
 /*****************  发送一个字符 **********************/
 void Usart_SendByte( USART_TypeDef * pUSARTx, uint8_t ch)

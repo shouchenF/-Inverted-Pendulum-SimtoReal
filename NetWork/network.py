@@ -4,34 +4,18 @@ import torch
 import sys
 import re  # 提取文本中的特定类型字符
 sys.path.append("../..")
+import numpy as np
 
-import serial  # 导入串口通信模块
+import serial # 导入串口通信模块
 import time
 
 result = [0.0, 0.0, 0.0, 0.0]
+receive_result = [0.0, 0.0, 0.0, 0.0]
 offset = [0.0]
 joint_vel = [0.0]
 ctrl = [0.0]
 target = [0.0]
 
-def sendData():
-    i = 0
-    sum = 0x00
-    sendBuffer = [
-            170, 85, 85, 85,
-            85, 85, 85, 85,
-            85, 47,]
-    for i in range(1, 7):
-        sum += sendBuffer[i]
-    sendBuffer[8] = sum
-    # print(sendBuffer)
-    separator = '-'
-    sendBuffer_str = separator.join(map(str, sendBuffer))
-    # sendBuffer_str = ''.join(str(i) for i in sendBuffer)
-    # print("发送的数据", sendBuffer_str.encode("utf8"))
-    ret = ser.write(sendBuffer_str.encode("utf8"))
-
-    return ret
 
 class MyNetwork(torch.nn.Module):
     def __init__(self, input_dim: int, output_dim: int, hidden_dim: int, model_path: str):
@@ -54,7 +38,7 @@ class MyNetwork(torch.nn.Module):
     def forward(self, obs_a: torch.Tensor) -> torch.Tensor:
         x = torch.relu(self.fc1(obs_a))
         x = torch.relu(self.fc2(x))
-        return torch.tanh(self.fc3(x))
+        return torch.tanh (self.fc3(x))
 
 def step_simulation(action):
     target = action + offset
@@ -62,6 +46,15 @@ def step_simulation(action):
     joint_vel[0] = 0.7 * joint_vel[0] + 0.3 * result[1]
     ctrl[0] = 150 * (target[0] - result[0]) - 10 * joint_vel[0]
     return ctrl
+
+
+def count_odd_numbers(action):
+    count = 0
+    action_str = str(action)
+    for c in action_str:
+        if c.isdigit() and int(c) % 2 == 1:
+            count += 1
+    return count
 
 
 def run_play():
@@ -74,8 +67,22 @@ def run_play():
     data = ''
     last_result = [0.0, 0.0, 0.0, 0.0]
     for i in range(10000):
+        ser = serial.Serial(  # 下面这些参数根据情况修改
+            port='COM3',  # 串口
+            baudrate=115200,  # 波特率
+            timeout = 2
+            # parity=serial.PARITY_ODD,
+            # stopbits=serial.STOPBITS_TWO,
+            # bytesize=serial.SEVENBITS
+        )
+        # 串口执行到这已经打开 再用open命令会报错
+        if ser.isOpen():  # 判断串口是否打开
+            print("open success")
+            # ser.write("hello".encode("utf8"))  # 向端口些数据 字符串必须译码
         ########## 1、 接收倒立摆的状态信息 ##############
         data = ser.readline()
+        print("data", data)
+        print("data")
         # 将字节串转换为字符串
         data_str = data.decode('utf-8')
         # 解决数据丢失问题
@@ -83,7 +90,7 @@ def run_play():
         # 使用正则表达式匹配出目标字符串
         pattern = r"motor_position=(\d+\.\d+); motor_velocity=(\d+\.\d+); sensor_position=(\d+\.\d+); sensor_velocity=([-+]?\d+\.\d+);"
         # pattern = r"[-+]?\d*\.\d+|\d+"  # 匹配浮点数或整数
-        print(data_str)
+        # print(data_str)
 
         # match = re.search(pattern, data)
         # if match:
@@ -100,42 +107,52 @@ def run_play():
 
         # 将匹配结果转换为浮点数并存放到数组中
         if matches:
-            result = [float(value) for value in matches[0]]
-            last_result = result
+            receive_result = [float(value) for value in matches[0]]
+            last_result = receive_result
         else:
-            result = last_result
+            receive_result = last_result
 
-        print(every_time, result)
+        result[0] = receive_result[0]
+        result[1] = receive_result[2]*(np.pi/180)
+        result[2] = receive_result[1]
+        result[3] = receive_result[3]*(np.pi/180)
+        # print(every_time, result)
+        # print(result)
+
        ############2、 神经网络动作处理    ###############
         # tensor_result = torch.tensor(result)
         # obs = torch.from_numpy(tensor_result).float().to(device)
         obs = torch.tensor(result, dtype=torch.float32).to(device)
         action = policy_net.forward(obs)
+        # print(action)
         action = action.detach().cpu().numpy()
         ######### 3、 发送神经网络输出的动作信息 ###########
         # 将action转化成字符串
+        # print(action)
         target = action + offset
         # 关节速度 = 关节初始速度 + 传感器获取速度
         joint_vel[0] = 0.7 * joint_vel[0] + 0.3 * result[1]
-        ctrl[0] = 150 * (target[0] - result[0]) - 100 * joint_vel[0]
+        ctrl[0] =int(150 * (target[0] - result[0]) - 10 * joint_vel[0])
+        # ctrl[0] = 150 * (target[0] - result[0]) - 10 * joint_vel[0]
+        action = ctrl
+        # print(action)
+        action_str = '\t'  # 帧头
+        action_str += '{}'.format(count_odd_numbers(action))    # 奇偶校验位
 
-        action =  ctrl
-        print(action)
-        action_str = '\r\n'.join(str(a) for a in action)
+        # action_str += '\v'  # 控制位
+
+        action_str += ''.join(str(a) for a in action)  # 数据位
         # action_str = str(action)
-        # print(action_str.encode("utf8"))
-        ser.write(action_str.encode("utf8"))  # 向端口些数据 字符串必须译码
+
+        action_str += "\r\n"  # 帧尾
+        # action_str = str(action)
+        print(action_str.encode("utf-8"))
+        ser.write(action_str.encode("utf-8"))  # 向端口些数据 字符串必须译码
+        # ser.write(b'0\r\n')
+        ser.close()  # 关闭串口
+
 
 if __name__ == '__main__':
-    ser = serial.Serial(  # 下面这些参数根据情况修改
-        port='COM3',  # 串口
-        baudrate=115200,  # 波特率
-        parity=serial.PARITY_ODD,
-        stopbits=serial.STOPBITS_TWO,
-        bytesize=serial.SEVENBITS
-    )
-    # 串口执行到这已经打开 再用open命令会报错
-    if ser.isOpen():  # 判断串口是否打开
-        print("open success")
-        # ser.write("hello".encode("utf8"))  # 向端口些数据 字符串必须译码
+
+
     run_play()
