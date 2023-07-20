@@ -2,7 +2,7 @@
 #include "usart.h"
 #include <string.h>
 uint16_t Res;
-uint16_t action;
+int16_t action;
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
