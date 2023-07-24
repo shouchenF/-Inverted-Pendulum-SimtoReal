@@ -17,7 +17,8 @@ Update：2021-12-09
 All rights reserved
 ***********************************************/
 #include "control.h"
-		
+#include <math.h>
+extern float motor_position, motor_velocity;
 int Balance_Pwm,Position_Pwm; //目标角度PWM、目标位置PWM
 u8 Position_Target;//用于标记位置控制的时间
 u8 Swing_up=1; //用于标记手动起摆时，是否是第一次进入手动起摆函数
@@ -38,7 +39,7 @@ int balance;                      //PWM返回值
 //位置PD控制所用到的参数
 float Position_PWM,Last_Position,Position_Bias,Position_Differential;
 float Position_Least;
-
+int my_Position(float pt,float pc);
 u8 auto_run=0; //手动起摆或自动起摆标志位，默认是手动起摆
 u8 autorun_step0=0; //自动起摆第0步，找到中点，等待起摆
 u8 autorun_step1=1; //自动起摆第1步
@@ -50,10 +51,12 @@ u8 success_flag=0; //自动起摆时满足平衡次数可以起摆的标志位
 long wait_count=0; //等待计数，计时时间到后，获取起摆成功的位置
 long D_Count;//用于辅助获取摆杆角度变化率的中间变量
 float Last_Angle_Balance; //用于获取摆杆角度变化率函数中，保存上一次角度
-
+float pt = 0;
 u8 left,right;
 
 u16 arr[20];
+
+#define _bndf(x,m,M) fmin(fmax(x,m),M)
 /**************************************************************************
 函数功能：所有的控制代码都在这里面
           TIM1控制的5ms定时中断 
@@ -68,7 +71,7 @@ int TIM1_UP_IRQHandler(void)
 			 if(++delay_50==10)	 delay_50=0,delay_flag=0;          //===给主函数提供50ms的精准延时  10次*5ms = 50ms
 		 }		
 		Encoder=Read_Encoder(4);             	                   //===更新编码器位置信息	 
-		Adc=Get_Adc_Average(3,10);                     //===更新姿态
+		Adc=Get_Adc_Average(3,10);                               //===更新姿态
 //		Get_Adc_Array(3,arr,10);
 //		Angle_Balance = medianFilter(arr, 15, 15);
 		 
@@ -76,21 +79,22 @@ int TIM1_UP_IRQHandler(void)
 	/************串口发送数据*****************/
 	// 数据内容：电机速度、电机位置、角位移传感器速度、角位移传感器的位置
 		motor_position = Read_Encoder_Angle(Encoder);
-		motor_velocity = Read_Encoder_Speed(Encoder);
 		sensor_position = Get_Adc_Average_Angle(Adc);
+		motor_velocity = Read_Encoder_Speed(Encoder);
 		sensor_velocity = Get_Adc_Average_Speed();
 		sprintf(motor_position_str, "%.4f", motor_position);
-		sprintf(motor_velocity_str, "%.4f", motor_velocity);
 		sprintf(sensor_position_str, "%.4f", sensor_position);
+		sprintf(motor_velocity_str, "%.4f", motor_velocity);
 		sprintf(sensor_velocity_str, "%.4f", sensor_velocity);
 
-		Moto = action;
-		Xianfu_Pwm();
+//		Moto = action;
+		float a = _bndf(pt,0.05f,0.4f);
+		Moto = my_Position(a,motor_position);
+		Xianfu_Pwm();		 
 		Set_Pwm(Moto);
-		
 	//自动起摆步骤1中的滑块边缘保护
-		if(Encoder>10000||Encoder<=6100)
-			Set_Pwm(0);	
+//		if(Encoder>10000||Encoder<=6100)
+//			Set_Pwm(0);	
 	}
   Voltage=Get_battery_volt();           //===获取电池电压	      
 	Key();                                //===扫描按键变化    	
@@ -128,6 +132,18 @@ int TIM1_UP_IRQHandler(void)
  		Position_PWM=Position_Bias*Position_KP+Position_Differential*Position_KD; //===速度控制		
  //    Position_PWM=Position_Bias*(Position_KP+Basics_Position_KP)/2+Position_Differential*(Position_KD+Basics_Position_KD)/2; //===位置控制	
  	  return Position_PWM;
+ }
+  int my_Position(float pt,float pc)
+ {  
+	 float pidC = 4080/0.44f;
+   	Position_Least = pc;                               //===
+     Position_Bias *=0.8;		   
+     Position_Bias += Position_Least*0.2;	             //===一阶低通滤波器  
+ 	  Position_Differential=Position_Bias-Last_Position;
+ 	  Last_Position=Position_Bias;
+ 		Position_PWM=(pt-Position_Bias)*Position_KP*pidC - Position_Differential*Position_KD*pidC; //===速度控制		
+ //    Position_PWM=Position_Bias*(Position_KP+Basics_Position_KP)/2+Position_Differential*(Position_KD+Basics_Position_KD)/2; //===位置控制	
+ 	  return (int)Position_PWM;
  }
 
 /**************************************************************************

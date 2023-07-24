@@ -1,8 +1,10 @@
 #include "sys.h"
 #include "usart.h"
 #include <string.h>
+#include <math.h>
+#include <stdio.h>
 uint16_t Res;
-int16_t action;
+float action;
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用ucos,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
@@ -109,6 +111,7 @@ int16_t count_odd_numbers(int16_t a) // a:数据起始位，b:数据长度
 void USART1_IRQHandler(void)                	//串口1中断服务程序
 	{
 	 uint16_t check_flag;
+	 uint16_t divisor_flag;
 
 	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
 		{
@@ -125,11 +128,12 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 							else{
 								USART_RX_STA|=0x8000;	//接收完成了
 								
-								check_flag = count_odd_numbers(2);
+//								check_flag = count_odd_numbers(2);
 								USART_RX_BUF[1] = USART_RX_BUF[1] - '0';
-								if(USART_RX_BUF[0] == '\t'&& USART_RX_BUF[1] == check_flag ) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
+								if(USART_RX_BUF[0] == '\t'&& USART_RX_BUF[1] == 1 ) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
 								{
-									int16_t value = 0;
+									float value = 0;
+									float divisor = 1.0;
 									int16_t sign = 1;
 										int a = 2;
 										if(USART_RX_BUF[2] == '-')
@@ -138,10 +142,18 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 											a = 3;
 										}
 											for (int i = a; i < (USART_RX_STA&0X3FFF); i++) {
-												value = value * 10 + USART_RX_BUF[i] - '0';	
+												if(USART_RX_BUF[i] != '.')
+												{
+//												 value = value * 10 + USART_RX_BUF[i] - '0';	
+												 value +=  (USART_RX_BUF[i] - '0') * pow(10, -(i - a));
+												}
+												else
+												{
+													a = a+ 1;
+												}
+												
 											}
-											action = sign * value ;
-
+											action = sign * value;
 											USART_RX_STA = 0;	
 											memset(USART_RX_BUF,0,USART_REC_LEN);
 							}

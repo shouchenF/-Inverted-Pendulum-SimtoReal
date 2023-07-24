@@ -103,7 +103,8 @@ void oled_show(void)
 	//=============第五行显示电压和目标位置=======================//			
 			OLED_ShowString(80,40,"T:");	  
 //			OLED_ShowNumber(95,40,Position_Zero,5,12) ; 
-      OLED_ShowNumber(95,40,action,5,12) ; 
+      int action_show = (int)(action * 100);
+      OLED_ShowNumber(95,40,action_show,5,12) ; 
 			OLED_ShowString(00,40,"VOL:");
 			OLED_ShowString(41,40,".");
 			OLED_ShowString(63,40,"V");
