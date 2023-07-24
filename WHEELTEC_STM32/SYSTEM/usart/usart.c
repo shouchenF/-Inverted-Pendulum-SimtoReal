@@ -111,7 +111,6 @@ int16_t count_odd_numbers(int16_t a) // a:数据起始位，b:数据长度
 void USART1_IRQHandler(void)                	//串口1中断服务程序
 	{
 	 uint16_t check_flag;
-	 uint16_t divisor_flag;
 
 	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
 		{
@@ -128,12 +127,11 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 							else{
 								USART_RX_STA|=0x8000;	//接收完成了
 								
-//								check_flag = count_odd_numbers(2);
+								check_flag = count_odd_numbers(2);
 								USART_RX_BUF[1] = USART_RX_BUF[1] - '0';
-								if(USART_RX_BUF[0] == '\t'&& USART_RX_BUF[1] == 1 ) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
+								if(USART_RX_BUF[0] == '\t'&& USART_RX_BUF[1] == check_flag ) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
 								{
 									float value = 0;
-									float divisor = 1.0;
 									int16_t sign = 1;
 										int a = 2;
 										if(USART_RX_BUF[2] == '-')

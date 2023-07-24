@@ -54,7 +54,7 @@ int main(void)
 
   while(1)
 	{
-		sprintf(data_str, "motor_position=%s; sensor_position=%s; motor_velocity=%s; sensor_velocity=%s;\n", motor_position_str, motor_velocity_str, sensor_position_str, sensor_velocity_str);
+		sprintf(data_str, "motor_position=%s; sensor_position=%s; motor_velocity=%s; sensor_velocity=%s;\n", motor_position_str, sensor_position_str, motor_velocity_str, sensor_velocity_str);
 		Usart_SendString( USART1, data_str);
 		DataScope();	           									//===上位机
 		Tips();                   								//===OLED显示与提示

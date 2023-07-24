@@ -88,7 +88,7 @@ int TIM1_UP_IRQHandler(void)
 		sprintf(sensor_velocity_str, "%.4f", sensor_velocity);
 
 //		Moto = action;
-		float a = _bndf(pt,0.05f,0.4f);
+		float a = _bndf(action,0.01f,0.42f);
 		Moto = my_Position(a,motor_position);
 		Xianfu_Pwm();		 
 		Set_Pwm(Moto);
