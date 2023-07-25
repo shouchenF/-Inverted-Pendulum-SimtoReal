@@ -3602,18 +3602,18 @@
       <ActiveTab>0</ActiveTab>
       <Doc>
         <Name>..\BALANCE\CONTROL\control.c</Name>
-        <ColumnNumber>18</ColumnNumber>
-        <TopLine>58</TopLine>
-        <CurrentLine>86</CurrentLine>
+        <ColumnNumber>46</ColumnNumber>
+        <TopLine>70</TopLine>
+        <CurrentLine>84</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
       </Doc>
       <Doc>
         <Name>.\main.c</Name>
-        <ColumnNumber>24</ColumnNumber>
-        <TopLine>28</TopLine>
-        <CurrentLine>48</CurrentLine>
+        <ColumnNumber>71</ColumnNumber>
+        <TopLine>13</TopLine>
+        <CurrentLine>31</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
@@ -3656,9 +3656,9 @@
       </Doc>
       <Doc>
         <Name>..\HARDWARE\ADC\adc.c</Name>
-        <ColumnNumber>0</ColumnNumber>
-        <TopLine>183</TopLine>
-        <CurrentLine>212</CurrentLine>
+        <ColumnNumber>3</ColumnNumber>
+        <TopLine>177</TopLine>
+        <CurrentLine>187</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>

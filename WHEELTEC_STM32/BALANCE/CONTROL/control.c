@@ -18,6 +18,8 @@ All rights reserved
 ***********************************************/
 #include "control.h"
 #include <math.h>
+#define LPF(x, f, c) (c*x + (1-c)*f)
+float pc_fil, vc_fil, ec_fil, wc_fil;
 extern float motor_position, motor_velocity;
 int Balance_Pwm,Position_Pwm; //目标角度PWM、目标位置PWM
 u8 Position_Target;//用于标记位置控制的时间
@@ -76,7 +78,11 @@ int TIM1_UP_IRQHandler(void)
 		sensor_position = Get_Adc_Average_Angle(Adc);
 		motor_velocity = Read_Encoder_Speed(Encoder);
 		sensor_velocity = Get_Adc_Average_Speed();
-		sprintf(data_str, "%-8.4f, %-8.4f, %-8.4f, %-8.4f\n", motor_position, sensor_position, motor_velocity, sensor_velocity);
+		pc_fil = LPF(motor_position, pc_fil,0.2f);
+		vc_fil = LPF(motor_velocity, vc_fil,0.2f);
+		ec_fil = LPF(sensor_position,ec_fil,0.2f);
+		wc_fil = LPF(sensor_velocity,wc_fil,0.2f);
+		sprintf(data_str, "%-8.4f, %-8.4f, %-8.4f, %-8.4f\n", pc_fil, ec_fil, vc_fil, wc_fil);
 		Usart_SendString( USART1, data_str);
 
 //		Moto = action;

@@ -197,9 +197,9 @@ float Get_Adc_Average_Angle(float adc)
 	{
 		--circle;
 	}	
-	angle_total = angle_c + 360*circle;
+	angle_total = angle_c + 360.0f*circle;
 	angle_pre = angle_c;
-	return angle_total * 3.14/180;
+	return angle_total * 3.1415926f/180.0f;
 }
 
 // 角位移传感器的速度
@@ -207,7 +207,7 @@ float Get_Adc_Average_Speed(void)
 {
 	speed = (float)((angle_total - angle_total_pre)*200.0f);
 	angle_total_pre = angle_total;
-	return speed * 3.14/180;
+	return speed * 3.1415926f/180.0f;
 }
 
 
