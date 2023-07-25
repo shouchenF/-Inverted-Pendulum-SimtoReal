@@ -31,7 +31,6 @@ float Adc;                        //角位移传感器数据
 float motor_position, motor_velocity, sensor_position, sensor_velocity;
 float Balance_KP=400,Balance_KD=400,Position_KP=20,Position_KD=300;  //PID系数
 float Menu=1,Amplitude1=5,Amplitude2=20,Amplitude3=1,Amplitude4=10;  //PID调试相关参数
-
 uint16_t receive_str;
 
 
@@ -46,7 +45,7 @@ int main(void)
   LED_Init();                     								//=====初始化与 LED 连接的硬件接口
 	MiniBalance_EXTI_Init();        								//=====按键初始化(外部中断的形式)
 	OLED_Init();                    								//=====OLED初始化
-	uart_init(115200);              								//=====初始化串口1
+	uart_init(921600);              								//=====初始化串口1
   MiniBalance_PWM_Init(7199,0);   								//=====初始化PWM 10KHZ，用于驱动电机 
 	Encoder_Init_TIM4();            								//=====初始化编码器（TIM4的编码器接口模式） 
 	Adc_Init();                     								//=====角位移传感器模拟量采集初始化
@@ -54,8 +53,8 @@ int main(void)
 
   while(1)
 	{
-		sprintf(data_str, "motor_position=%s; sensor_position=%s; motor_velocity=%s; sensor_velocity=%s;\n", motor_position_str, sensor_position_str, motor_velocity_str, sensor_velocity_str);
-		Usart_SendString( USART1, data_str);
+//		sprintf(data_str, "motor_position=%-8.4f; sensor_position=%-8.4f; motor_velocity=%-8.4f; sensor_velocity=%-8.4f;\n", motor_position, sensor_position, motor_velocity, sensor_velocity);
+//		Usart_SendString( USART1, data_str);
 		DataScope();	           									//===上位机
 		Tips();                   								//===OLED显示与提示
 		delay_flag=1;	          									//===50ms中断精准延时标志位		  

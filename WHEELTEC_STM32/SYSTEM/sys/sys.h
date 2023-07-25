@@ -92,11 +92,6 @@ extern float motor_position, motor_velocity, sensor_position, sensor_velocity;
 extern float Balance_KP,Balance_KD,Position_KP,Position_KD;  //PID系数
 extern float Menu,Amplitude1,Amplitude2,Amplitude3,Amplitude4; //PID调试相关参数
 extern float motor_position, motor_velocity, sensor_position, sensor_velocity;
-extern char motor_position_str[20];
-extern char motor_velocity_str[20];
-extern char sensor_position_str[20];
-extern char sensor_velocity_str[20];
-extern char data_str[100];
 extern u8 system_start;
 
 #endif

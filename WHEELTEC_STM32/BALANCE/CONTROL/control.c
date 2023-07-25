@@ -24,13 +24,7 @@ u8 Position_Target;//用于标记位置控制的时间
 u8 Swing_up=1; //用于标记手动起摆时，是否是第一次进入手动起摆函数
 
 // 将变量转换为字符串形式
-
-char motor_position_str[20];
-char motor_velocity_str[20];
-char sensor_position_str[20];
-char sensor_velocity_str[20];
-char data_str[100];
-
+char data_str[200];
 //倾角PD控制所用到的参数
 float Bias;                       //倾角偏差
 float Last_Bias,D_Bias;    //PID相关变量
@@ -82,16 +76,14 @@ int TIM1_UP_IRQHandler(void)
 		sensor_position = Get_Adc_Average_Angle(Adc);
 		motor_velocity = Read_Encoder_Speed(Encoder);
 		sensor_velocity = Get_Adc_Average_Speed();
-		sprintf(motor_position_str, "%.4f", motor_position);
-		sprintf(sensor_position_str, "%.4f", sensor_position);
-		sprintf(motor_velocity_str, "%.4f", motor_velocity);
-		sprintf(sensor_velocity_str, "%.4f", sensor_velocity);
+		sprintf(data_str, "%-8.4f, %-8.4f, %-8.4f, %-8.4f\n", motor_position, sensor_position, motor_velocity, sensor_velocity);
+		Usart_SendString( USART1, data_str);
 
 //		Moto = action;
 		float a = _bndf(action,0.01f,0.42f);
 		Moto = my_Position(a,motor_position);
 		Xianfu_Pwm();		 
-		Set_Pwm(Moto);
+//		Set_Pwm(Moto);
 	//自动起摆步骤1中的滑块边缘保护
 //		if(Encoder>10000||Encoder<=6100)
 //			Set_Pwm(0);	

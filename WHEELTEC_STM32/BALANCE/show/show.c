@@ -139,12 +139,12 @@ void DataScope(void)
 //		DataScope_Get_Channel_Data( 0, 8 ); 
 //		DataScope_Get_Channel_Data(0, 9 );  
 //		DataScope_Get_Channel_Data( 0 , 10);
-		Send_Count = DataScope_Data_Generate(3);
-		for( i = 0 ; i < Send_Count; i++) 
-		{
-		while((USART1->SR&0X40)==0);  
-		USART1->DR = DataScope_OutPut_Buffer[i]; 
-		}
+//		Send_Count = DataScope_Data_Generate(3);
+//		for( i = 0 ; i < Send_Count; i++) 
+//		{
+//		while((USART1->SR&0X40)==0);  
+//		USART1->DR = DataScope_OutPut_Buffer[i]; 
+//		}
 }	
 
 //提示页 ：检测到摆杆需要调节，请根据提示调节摆杆，按下一页按键开始调节

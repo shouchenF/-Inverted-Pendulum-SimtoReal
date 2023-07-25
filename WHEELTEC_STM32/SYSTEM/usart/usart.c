@@ -200,7 +200,10 @@ void Usart_SendString( USART_TypeDef * pUSARTx, char *str)
       Usart_SendByte( pUSARTx, *(str + k) );
       k++;
   } while(*(str + k)!='\0');
-  
+//	int length = sizeof(str);
+//	for(k=0;k<5-1;k++){
+//		Usart_SendByte( pUSARTx, *(str + k) );
+//	}
   /* 等待发送完成 */
   while(USART_GetFlagStatus(pUSARTx,USART_FLAG_TC)==RESET)
   {}
