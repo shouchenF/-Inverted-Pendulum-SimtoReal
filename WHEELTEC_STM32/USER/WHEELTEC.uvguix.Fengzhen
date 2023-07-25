@@ -3602,9 +3602,9 @@
       <ActiveTab>0</ActiveTab>
       <Doc>
         <Name>..\BALANCE\CONTROL\control.c</Name>
-        <ColumnNumber>55</ColumnNumber>
+        <ColumnNumber>18</ColumnNumber>
         <TopLine>58</TopLine>
-        <CurrentLine>79</CurrentLine>
+        <CurrentLine>86</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
@@ -3629,9 +3629,9 @@
       </Doc>
       <Doc>
         <Name>..\BALANCE\show\show.c</Name>
-        <ColumnNumber>7</ColumnNumber>
-        <TopLine>118</TopLine>
-        <CurrentLine>147</CurrentLine>
+        <ColumnNumber>18</ColumnNumber>
+        <TopLine>121</TopLine>
+        <CurrentLine>125</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>

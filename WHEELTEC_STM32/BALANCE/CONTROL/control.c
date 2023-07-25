@@ -83,7 +83,7 @@ int TIM1_UP_IRQHandler(void)
 		float a = _bndf(action,0.01f,0.42f);
 		Moto = my_Position(a,motor_position);
 		Xianfu_Pwm();		 
-//		Set_Pwm(Moto);
+		Set_Pwm(Moto);
 	//自动起摆步骤1中的滑块边缘保护
 //		if(Encoder>10000||Encoder<=6100)
 //			Set_Pwm(0);	

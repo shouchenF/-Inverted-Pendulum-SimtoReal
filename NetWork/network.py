@@ -103,20 +103,31 @@ import numpy as np
 
 import serial  # 导入串口通信模块
 import time
-global result
+from highPrecTimer import Timer as HpTimer
+global result, action
 result = [0.0, 0.0, 0.0, 0.0]
 def task():
     ax = []  # 定义一个 x 轴的空列表用来接收动态的数据
-    ay = []  # 定义一个 y 轴的空列表用来接收动态的数据
+    ypt = []  # 定义一个 y 轴的空列表用来接收动态的数据
+    ypc = []  # 定义一个 y 轴的空列表用来接收动态的数据
+    yac = []  # 定义一个 y 轴的空列表用来接收动态的数据
     plt.ion()  # 开启一个画图的窗口
+    delay_us = 50 * 1000
+    tic = HpTimer(delay_us)
     for i in range(100000):  # 遍历0-99的值
-        time.sleep(0.001)
-        ax.append(i*0.001) # 添加 i 到 x 轴的数据中
-        ay.append(result[1])  # 添加 i 的平方到 y 轴的数据中
-        # plt.clf()  # 清除之前画的图
-        # plt.plot(ax, ay)  # 画出当前 ax 列表和 ay 列表中的值的图形
-        # plt.pause(0.0001)  # 暂停一秒
+        tic.waiting()
+        # time.sleep(0.050)
+        ax.append(i) # 添加 i 到 x 轴的数据中
+        ypt.append(action[0])  # 添加 i 的平方到 y 轴的数据中
+        ypc.append(result[0])  # 添加 i 的平方到 y 轴的数据中
+        yac.append(result[1])  # 添加 i 的平方到 y 轴的数据中
+        plt.clf()  # 清除之前画的图
+        plt.plot(ax, ypt, 'k')  # 画出当前 ax 列表和 ay 列表中的值的图形
+        plt.plot(ax, ypc, 'r')  # 画出当前 ax 列表和 ay 列表中的值的图形
+        plt.plot(ax, yac, 'b')  # 画出当前 ax 列表和 ay 列表中的值的图形
+        plt.pause(0.001)  # 暂停一秒
         # plt.ioff()  # 关闭画图的窗口
+
 def count_odd_numbers(action):
     count = 0
     action_str = str(action)
@@ -127,7 +138,7 @@ def count_odd_numbers(action):
 
 
 def run_play():
-    global result
+    global result, action
     one_flag = 1
     last_result = [0.0, 0.0, 0.0, 0.0]
 
@@ -147,9 +158,10 @@ def run_play():
 
     every_time = time.strftime('%Y-%m-%d %H:%M:%S')  # 时间戳
     data = ''
+    delay_us = 5 * 1000
+    tic = HpTimer(delay_us)
     for i in range(1000000):
-        time.sleep(0.002)
-        start_time = time.time()
+        tic.waiting()
         ########## 1、 接收倒立摆的状态信息 ##############
         if ser.in_waiting >= 39:
             print(ser.in_waiting)
@@ -163,59 +175,22 @@ def run_play():
             if matches:
                 result = [float(value) for value in matches[0]]
             # print("task1——result=", result)
-        # end_time = time.time()
-        # print("time:", end_time - start_time)
-        # print("data", data)
-        # 将字节串转换为字符串
-        # try:
-        #     data_str = data.decode('utf-8')
-        # except UnicodeDecodeError:
-        #     data_str = data.decode('utf-8', errors='ignore')
-        # data_str = data.decode('utf-8')
-        #
-        # print("data_str=", data_str)
-        # # 解决数据丢失问题
-        # # 使用正则表达式匹配出目标字符串
-        # pattern = r"motor_position=([-+]?\d+\.\d+); sensor_position=([-+]?\d+\.\d+); motor_velocity=([-+]?\d+\.\d+); sensor_velocity=([-+]?\d+\.\d+);"
-        # matches = re.findall(pattern, data)
-        #
-        # # 将匹配结果转换为浮点数并存放到数组中
-        # if matches:
-        #     receive_result = [float(value) for value in matches[0]]
-        #     last_result = receive_result
-        # else:
-        #     receive_result = last_result
-        #
-        # result = receive_result
-        # print("task1——result=", result)
-        # if one_flag == 1:
-        #     result[0] = 0.0
-        #     result[1] = 0.0
-        #     result[2] = 0.0
-        #     result[3] = 0.0
-        #     one_flag += 1
-        # ############2、 神经网络动作处理    ###############
-        #
-        #
-        # obs = torch.tensor(result, dtype=torch.float32).to(device)
-        # action = policy_net.predict(obs)
-        #
+        start_time = time.time()
+        obs = torch.tensor(result, dtype=torch.float32).to(device)
+        action = policy_net.predict(obs)
+        end_time = time.time()
+        # print(end_time, end_time - start_time)
         # ######### 3、 发送神经网络输出的动作信息 ###########
-        # action = tuple(max(min(a, 0.4), 0.05) if a is not None else None for a in action[0])
-        # # 将action转化成字符串
-        # # print(action)
-        #
-        #
-        # action_str = '\t'  # 帧头
-        # action_str += '{}'.format(count_odd_numbers(action[0]))  # 奇偶校验位
-        # # action_str += ''.join(str(a) for a in action[0])  # 数据位
-        # action_str += str(action[0])
-        # action_str += "\r\n"  # 帧尾
+        action = tuple(max(min(a, 0.4), 0.05) if a is not None else None for a in action[0])
+        # 将action转化成字符串
+        action_str = '\t'  # 帧头
+        action_str += '{}'.format(count_odd_numbers(action[0]))  # 奇偶校验位
+        # action_str += ''.join(str(a) for a in action[0])  # 数据位
+        action_str += str(action[0])
+        action_str += "\r\n"  # 帧尾
         # print(action_str.encode("utf-8"))
-        #
-        #
-        #
-        # ser.write(action_str.encode("utf-8"))  # 向端口些数据 字符串必须译码
+        print(action[0], result[0], result[1])
+        ser.write(action_str.encode("utf-8"))  # 向端口些数据 字符串必须译码
 
     ser.close()  # 关闭串口
 
