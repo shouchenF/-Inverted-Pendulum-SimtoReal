@@ -86,8 +86,8 @@ int TIM1_UP_IRQHandler(void)
 		Usart_SendString( USART1, data_str);
 
 //		Moto = action;
-		float a = _bndf(action,0.01f,0.42f);
-		Moto = my_Position(a,motor_position);
+		float a = _bndf(action,-0.15f,0.15f);
+		Moto = my_Position(a,pc_fil);
 		Xianfu_Pwm();		 
 		Set_Pwm(Moto);
 	//自动起摆步骤1中的滑块边缘保护
@@ -131,6 +131,7 @@ int TIM1_UP_IRQHandler(void)
  //    Position_PWM=Position_Bias*(Position_KP+Basics_Position_KP)/2+Position_Differential*(Position_KD+Basics_Position_KD)/2; //===位置控制	
  	  return Position_PWM;
  }
+ 
   int my_Position(float pt,float pc)
  {  
 	 float pidC = 4080/0.44f;

@@ -186,7 +186,7 @@ float Get_Adc_Average_Angle(float adc)
 		adc_c = 4096;
 	}
 	adc_pre = adc_c;
-	angle_c = (float)((adc_c/4096.0f*360.0f)-90.0f);
+	angle_c = (float)((adc_c/4096.0f*360.0f)-270.0f);
 	
 	if((angle_c - angle_pre) < -180)
 	{

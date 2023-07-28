@@ -61,10 +61,10 @@ def run_play():
     last_result = [0.0, 0.0, 0.0, 0.0]
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    policy_net = PPO.load("./ppo_M04_2457600.zip")
+    policy_net = PPO.load("./ppo_M04_25600.zip")
 
     ser = serial.Serial(  # 下面这些参数根据情况修改
-        port='COM5',  # 串口
+        port='COM8',  # 串口
         baudrate=921600,  # 波特率
         timeout=0.001
         # parity=serial.PARITY_ODD,
@@ -85,21 +85,23 @@ def run_play():
             print(ser.in_waiting)
             data = ser.read(ser.in_waiting)
             # data = ser.readline()
-            # print("data", data)
+            print("data", data)
             data_str = data.decode('utf-8')
             pattern = r"(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*"
             matches = re.findall(pattern, data_str)
             # 将匹配结果转换为浮点数并存放到数组中
             if matches:
                 result = [float(value) for value in matches[0]]
-            # print("task1——result=", result)
+            print("task1——result=", result)
+
         start_time = time.time()
         obs = torch.tensor(result, dtype=torch.float32).to(device)
         action = policy_net.predict(obs)
         end_time = time.time()
         # print(end_time, end_time - start_time)
         # ######### 3、 发送神经网络输出的动作信息 ###########
-        action_ = max(min(action[0][0], 0.40), 0.05)
+        action_ = -0.20 + (0.5 * (action[0][0] + 1.0) * (0.20 - (-0.20)))
+        # action_ = min(max(action[0][0], -0.18), 0.18)
         # action = tuple(max(min(a, 0.40), 0.05) if a is not None else None for a in action[0])
         # 将action转化成字符串
         action_str = '\t'  # 帧头
@@ -108,9 +110,9 @@ def run_play():
         action_str += str(action_)
         action_str += "\r\n"  # 帧尾
         # print(action_str.encode("utf-8"))
-        print(action_, result[0], result[1])
+        print(action_, result[0], result[1], result[2], result[3])
         csv_writer.writerow([action_, result[0], result[1], result[2], result[3]])
-        ser.write(action_str.encode("utf-8"))  # 向端口些数据 字符串必须译码
+        # ser.write(action_str.encode("utf-8"))  # 向端口些数据 字符串必须译码
 
     ser.close()  # 关闭串口
 

@@ -105,7 +105,7 @@ float Read_Encoder_Angle(int encoder)
 {
 	float motor_position;
    
-	motor_position = (float)(10000 - encoder)/4080*0.44;
+	motor_position = (float)(10000 - encoder)/2040*0.22;
 	
 	return (float)motor_position;
 }
@@ -113,8 +113,24 @@ float Read_Encoder_Angle(int encoder)
 float Read_Encoder_Speed(int encoder)
 {
 	float motor_speed;
-	motor_speed = (float)((10000 - encoder) - last_Encoder_TIM)/4080*0.44*200;
+	motor_speed = (float)((10000 - encoder) - last_Encoder_TIM)/2040*0.22*200;
 	last_Encoder_TIM = 10000 - encoder;
 	return (float)motor_speed;
 }
 
+//float Read_Encoder_Angle(int encoder)
+//{
+//	float motor_position;
+//   
+//	motor_position = (float)(10000 - encoder)/4080*0.44;
+//	
+//	return (float)motor_position;
+//}
+
+//float Read_Encoder_Speed(int encoder)
+//{
+//	float motor_speed;
+//	motor_speed = (float)((10000 - encoder) - last_Encoder_TIM)/4080*0.44*200;
+//	last_Encoder_TIM = 10000 - encoder;
+//	return (float)motor_speed;
+//}

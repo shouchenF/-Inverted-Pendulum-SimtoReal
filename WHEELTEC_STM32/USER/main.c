@@ -29,7 +29,9 @@ int Moto;                                   //电机PWM变量 应是Motor的 向
 int Voltage;                                //电池电压采样相关的变量
 float Adc;                        //角位移传感器数据
 float motor_position, motor_velocity, sensor_position, sensor_velocity;
-float Balance_KP=400,Balance_KD=400,Position_KP=20,Position_KD=300;  //PID系数
+//float Balance_KP=400,Balance_KD=400,Position_KP=20,Position_KD=300;  //PID系数
+float Balance_KP=400,Balance_KD=400;
+float Position_KP=500,Position_KD=10;  //PID系数
 float Menu=1,Amplitude1=5,Amplitude2=20,Amplitude3=1,Amplitude4=10;  //PID调试相关参数
 uint16_t receive_str;
 
