@@ -61,7 +61,7 @@ def run_play():
     last_result = [0.0, 0.0, 0.0, 0.0]
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    policy_net = PPO.load("./ppo_M04_25600.zip")
+    policy_net = PPO.load("./ppo_pen_51200.zip")
 
     ser = serial.Serial(  # 下面这些参数根据情况修改
         port='COM8',  # 串口
@@ -112,7 +112,7 @@ def run_play():
         # print(action_str.encode("utf-8"))
         print(action_, result[0], result[1], result[2], result[3])
         csv_writer.writerow([action_, result[0], result[1], result[2], result[3]])
-        # ser.write(action_str.encode("utf-8"))  # 向端口些数据 字符串必须译码
+        ser.write(action_str.encode("utf-8"))  # 向端口些数据 字符串必须译码
 
     ser.close()  # 关闭串口
 

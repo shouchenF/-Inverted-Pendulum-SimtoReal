@@ -22,6 +22,7 @@ unsigned char Send_Count; //串口需要发送的数据个数
 float Vol;
 extern u8 success_flag;
 extern float D_Angle_Balance;
+extern float Velocity_PWM;
 /**************************************************************************
 函数功能：OLED显示
 入口参数：无
@@ -132,10 +133,10 @@ void DataScope(void)
 		DataScope_Get_Channel_Data( Adc, 1 );      
 		DataScope_Get_Channel_Data( Encoder, 2 );         
 		DataScope_Get_Channel_Data( 0, 3 );              
-		DataScope_Get_Channel_Data(motor_position , 4 );   
-		DataScope_Get_Channel_Data(motor_velocity, 5 ); //用您要显示的数据替换0就行了
-		DataScope_Get_Channel_Data(sensor_position , 6 );//用您要显示的数据替换0就行了
-		DataScope_Get_Channel_Data(sensor_velocity, 7 );
+		  DataScope_Get_Channel_Data(motor_position , 4);   
+		  DataScope_Get_Channel_Data(motor_velocity, 5 ); //用您要显示的数据替换0就行了
+		  DataScope_Get_Channel_Data(sensor_position , 6 );//用您要显示的数据替换0就行了
+	   	DataScope_Get_Channel_Data(sensor_velocity, 7 );
 //		DataScope_Get_Channel_Data( 0, 8 ); 
 //		DataScope_Get_Channel_Data(0, 9 );  
 //		DataScope_Get_Channel_Data( 0 , 10);

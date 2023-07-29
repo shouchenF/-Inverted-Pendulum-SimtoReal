@@ -49,7 +49,7 @@ long D_Count;//用于辅助获取摆杆角度变化率的中间变量
 float Last_Angle_Balance; //用于获取摆杆角度变化率函数中，保存上一次角度
 float pt = 0;
 u8 left,right;
-
+float error = 0.0, error_sum = 0.0, Velocity_PWM = 0.0;
 u16 arr[20];
 
 #define _bndf(x,m,M) fmin(fmax(x,m),M)
@@ -83,11 +83,12 @@ int TIM1_UP_IRQHandler(void)
 		ec_fil = LPF(sensor_position,ec_fil,0.2f);
 		wc_fil = LPF(sensor_velocity,wc_fil,0.2f);
 		sprintf(data_str, "%-8.4f, %-8.4f, %-8.4f, %-8.4f\n", pc_fil, ec_fil, vc_fil, wc_fil);
-		Usart_SendString( USART1, data_str);
+		Usart_SendString(USART1, data_str);
 
 //		Moto = action;
-		float a = _bndf(action,-0.15f,0.15f);
-		Moto = my_Position(a,pc_fil);
+		float a = _bndf(action,-0.7f,0.7f);
+//		Moto = my_Position(a,pc_fil);
+    Moto = my_velocity(a ,vc_fil);
 		Xianfu_Pwm();		 
 		Set_Pwm(Moto);
 	//自动起摆步骤1中的滑块边缘保护
@@ -144,7 +145,17 @@ int TIM1_UP_IRQHandler(void)
  //    Position_PWM=Position_Bias*(Position_KP+Basics_Position_KP)/2+Position_Differential*(Position_KD+Basics_Position_KD)/2; //===位置控制	
  	  return (int)Position_PWM;
  }
-
+ 
+int my_velocity(float target_velocity, float current_velocity)
+{
+	// 1-7200 -> 1 - 100
+  float pidC = 4080/0.44f;
+	float kp=3, ki= 0.1*0.5;
+	error = target_velocity - current_velocity;
+	error_sum += error;
+  Velocity_PWM =  kp * error *pidC + ki * error_sum *pidC; //1-72
+	return (int)Velocity_PWM;
+}
 /**************************************************************************
 函数功能：赋值给PWM寄存器
 入口参数：PWM

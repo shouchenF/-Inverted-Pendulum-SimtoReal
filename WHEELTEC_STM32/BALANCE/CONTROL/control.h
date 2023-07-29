@@ -38,5 +38,6 @@ void Get_D_Angle_Balance(void);
 int Mean_Filter(int sensor);
 int Position_PID (int Encoder,int Target);
 int Pre_Position(int Encoder);
+int my_velocity(float target_velocity, float current_velocity);
 #endif
 
