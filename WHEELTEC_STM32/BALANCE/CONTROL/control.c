@@ -148,13 +148,25 @@ int TIM1_UP_IRQHandler(void)
  
 int my_velocity(float target_velocity, float current_velocity)
 {
-	// 1-7200 -> 1 - 100
+
   float pidC = 4080/0.44f;
 	float kp=3, ki= 0.1*0.5;
 	error = target_velocity - current_velocity;
 	error_sum += error;
-  Velocity_PWM =  kp * error *pidC + ki * error_sum *pidC; //1-72
-	return (int)Velocity_PWM;
+	
+	// 设置积分项的上限和下限
+  float ki_max = 100; // 积分项的上限
+  float ki_min = -100; // 积分项的下限
+
+  // 对积分项进行限制
+  if (error_sum > ki_max) {
+    error_sum = ki_max;
+  } else if (error_sum < ki_min) {
+    error_sum = ki_min;
+  }
+	
+  Velocity_PWM =  kp * error *pidC + ki * error_sum *pidC; 
+	return (int)Velocity_PWM; // 0-7200
 }
 /**************************************************************************
 函数功能：赋值给PWM寄存器
