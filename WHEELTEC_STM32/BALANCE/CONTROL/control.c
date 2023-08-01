@@ -135,7 +135,7 @@ int TIM1_UP_IRQHandler(void)
  
   int my_Position(float pt,float pc)
  {  
-	 float pidC = 4080/0.44f;
+	 float pidC = 4080.0/0.44f;
    	Position_Least = pc;                               //===
      Position_Bias *=0.8;		   
      Position_Bias += Position_Least*0.2;	             //===一阶低通滤波器  
@@ -149,14 +149,14 @@ int TIM1_UP_IRQHandler(void)
 int my_velocity(float target_velocity, float current_velocity)
 {
 
-  float pidC = 4080/0.44f;
-	float kp=3, ki= 0.1*0.5;
+  float pidC = 4080.0/0.44f;
+	float kp=3.0, ki= 0.1;
 	error = target_velocity - current_velocity;
 	error_sum += error;
 	
 	// 设置积分项的上限和下限
-  float ki_max = 100; // 积分项的上限
-  float ki_min = -100; // 积分项的下限
+  float ki_max = 7200.0f/ki; // 积分项的上限
+  float ki_min = -7200.0f/ki; // 积分项的下限
 
   // 对积分项进行限制
   if (error_sum > ki_max) {
@@ -166,6 +166,11 @@ int my_velocity(float target_velocity, float current_velocity)
   }
 	
   Velocity_PWM =  kp * error *pidC + ki * error_sum *pidC; 
+	if (Velocity_PWM > 7200.0f) {
+    Velocity_PWM = 7200.0f;
+  } else if (Velocity_PWM < -7200.0f) {
+    Velocity_PWM = -7200.0f;
+  }
 	return (int)Velocity_PWM; // 0-7200
 }
 /**************************************************************************
