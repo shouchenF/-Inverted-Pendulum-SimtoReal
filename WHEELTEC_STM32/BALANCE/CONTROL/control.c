@@ -18,6 +18,8 @@ All rights reserved
 ***********************************************/
 #include "control.h"
 #include <math.h>
+#include <string.h>
+#include <usart.h>
 #define LPF(x, f, c) (c*x + (1-c)*f)
 float pc_fil, vc_fil, ec_fil, wc_fil;
 extern float motor_position, motor_velocity;
@@ -27,6 +29,9 @@ u8 Swing_up=1; //用于标记手动起摆时，是否是第一次进入手动起
 
 // 将变量转换为字符串形式
 char data_str[200];
+unsigned char byteArry[sizeof(double)];
+uint8_t data[3]={0x12,0x04,0x06};
+uint8_t data_array[10];
 //倾角PD控制所用到的参数
 float Bias;                       //倾角偏差
 float Last_Bias,D_Bias;    //PID相关变量
@@ -50,6 +55,7 @@ float Last_Angle_Balance; //用于获取摆杆角度变化率函数中，保存�
 float pt = 0;
 u8 left,right;
 float error = 0.0, error_sum = 0.0, Velocity_PWM = 0.0;
+// unsigned char byteArry[sizeof(float)];
 u16 arr[20];
 
 #define _bndf(x,m,M) fmin(fmax(x,m),M)
@@ -68,12 +74,14 @@ int TIM1_UP_IRQHandler(void)
 		 }		
 		Encoder=Read_Encoder(4);             	                   //===更新编码器位置信息	 
 		Adc=Get_Adc_Average(3,10);                               //===更新姿态
-//		Get_Adc_Array(3,arr,10);
-//		Angle_Balance = medianFilter(arr, 15, 15);
 		 
+//		Get_Adc_Array(3,arr,10);
+//		Angle_Balance = medianFilter(arr, 15, 15);	 
 //  	Get_D_Angle_Balance();                                   //===获得摆杆角速度
-	/************串口发送数据*****************/
-	// 数据内容：电机速度、电机位置、角位移传感器速度、角位移传感器的位置
+
+	 
+/************状态：电机速度、位置和角位移传感器的速度、位置*****************/	 
+//  字符串收发：已调试成功
 		motor_position = Read_Encoder_Angle(Encoder);
 		sensor_position = Get_Adc_Average_Angle(Adc);
 		motor_velocity = Read_Encoder_Speed(Encoder);
@@ -82,15 +90,62 @@ int TIM1_UP_IRQHandler(void)
 		vc_fil = LPF(motor_velocity, vc_fil,0.2f);
 		ec_fil = LPF(sensor_position,ec_fil,0.2f);
 		wc_fil = LPF(sensor_velocity,wc_fil,0.2f);
-		sprintf(data_str, "%-8.4f, %-8.4f, %-8.4f, %-8.4f\n", pc_fil, ec_fil, vc_fil, wc_fil);
-		Usart_SendString(USART1, data_str);
+		 
+/************** 串口发送数据方式一：使用字符串传输数据（整型和浮点型） **********************/				 
+//		sprintf(data_str, "%-8.4f, %-8.4f, %-8.4f, %-8.4f\n", pc_fil, ec_fil, vc_fil, wc_fil);
+//		Usart_SendString(USART1, data_str);
+//		motor_velocity = 0.123;
+		
+/************** 串口发送数据方式二：传输数据打包-16进制传输（整型） **********************/		
+		data_array[0] =  0x12;
+		data_array[1] =  0x34;
+		data_array[2] = (int)Encoder & 0xFF;
+		data_array[3] = ((int)Encoder >> 8) & 0xFF;
+		data_array[4] = (int)Adc & 0xFF;
+		data_array[5] = ((int)Adc >> 8) & 0xFF;
+		data_array[6] =  0x56;
+		data_array[7] =  0x78;
+		for(uint8_t  i = 0 ; i < 8; i++)
+			{
+				USART_SendData(USART1, *(data_array + i));
+        while(USART_GetFlagStatus(USART1,USART_FLAG_TC)==RESET);  
+			}
+	
+
+/************** 串口发送数据方式三： 串口传输数据打包-16进制传输（整型和浮点型） **********************/		
+//    FloatToByte(motor_velocity, byteArry); // 8个字节数据
+//		data_array[0] =  0x12;  // 帧头1
+//		data_array[1] =  0x34;  // 帧头2
+//		data_array[2] = (int)motor_position & 0xFF;          // 电机位置低字节
+//		data_array[3] = ((int)motor_position >> 8) & 0xFF;   // 电机位置高字节
+//		/*电机速度为浮点型数据，将其十进制数转换为单精度浮点数是4个字节（32位），转换网站：http://www.styb.cn/cms/ieee_754.php*/
+//		data_array[4] = byteArry[0];							// 电机速度低字节		
+//		data_array[5] = byteArry[1];				// 电机速度高字节	
+//		data_array[6] = byteArry[2];							// 电机速度低字节		
+//		data_array[7] = byteArry[3];				// 电机速度高字节	
+//		data_array[8] =  0x56;  // 帧尾1
+//		data_array[9] =  0x78;  // 帧尾2
+//		for(uint8_t  i = 0 ; i < sizeof(data_array); i++)
+//			{
+//				USART_SendData(USART1, *(data_array + i));
+//        while(USART_GetFlagStatus(USART1,USART_FLAG_TC)==RESET);  
+//			}
+			
+/**************串口发送数据方式四： 仅发送浮点型小数 **********************/
+//     FloatToByte(motor_velocity, byteArry); // 8个字节数据
+//     for(uint8_t  i = 0 ; i < sizeof(float); i++)
+//			{
+//				USART_SendData(USART1, *(byteArry + i));
+//        while(USART_GetFlagStatus(USART1,USART_FLAG_TC)==RESET);  
+//			}
+
 
 //		Moto = action;
-		float a = _bndf(action,-0.7f,0.7f);
+//		float a = _bndf(action,-0.7f,0.7f);
 //		Moto = my_Position(a,pc_fil);
-    Moto = my_velocity(a ,vc_fil);
-		Xianfu_Pwm();		 
-		Set_Pwm(Moto);
+//    Moto = my_velocity(a ,vc_fil);
+//		Xianfu_Pwm();		 
+		Set_Pwm(action);
 	//自动起摆步骤1中的滑块边缘保护
 //		if(Encoder>10000||Encoder<=6100)
 //			Set_Pwm(0);	
@@ -100,6 +155,28 @@ int TIM1_UP_IRQHandler(void)
 	return 0;	  
 } 
 
+/**************************************************************************
+函数功能：将一个浮点数转换为字节数组   倒序  大小端的问题
+入口参数：浮点数   字节数组
+**************************************************************************/
+void FloatToByte(float floatNum, unsigned char* byteArry) {
+    char* pchar = (char*)&floatNum;
+    for (int i = 0; i < sizeof(float); i++) {
+        *byteArry = *pchar;
+        pchar++;
+        byteArry++;
+    }
+}
+
+/**************************************************************************
+函数功能：将一个字节数组转换为浮点数
+入口参数：  字节数组
+**************************************************************************/
+float Byte2Float(unsigned char* byteArry) {
+    float floatNum;
+    memcpy(&floatNum, byteArry, sizeof(float));
+    return floatNum;
+}
 /**************************************************************************
 函数功能：倾角PD控制
 入口参数：角度
@@ -150,7 +227,7 @@ int my_velocity(float target_velocity, float current_velocity)
 {
 
   float pidC = 4080.0/0.44f;
-	float kp=3.0, ki= 0.1;
+	float kp=3.0, ki= 0.13;
 	error = target_velocity - current_velocity;
 	error_sum += error;
 	

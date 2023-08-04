@@ -16,6 +16,7 @@ class Timer(object):
     def waiting(self):
         while self.counter - self.__beginCount < self.__dconter:
             j = 1
+            # print(0)
         self.__beginCount += self.__dconter
 
     @property

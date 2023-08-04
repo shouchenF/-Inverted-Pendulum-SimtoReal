@@ -376,6 +376,7 @@ void USART_ReceiverWakeUpCmd(USART_TypeDef* USARTx, FunctionalState NewState);
 void USART_LINBreakDetectLengthConfig(USART_TypeDef* USARTx, uint16_t USART_LINBreakDetectLength);
 void USART_LINCmd(USART_TypeDef* USARTx, FunctionalState NewState);
 void USART_SendData(USART_TypeDef* USARTx, uint16_t Data);
+void USART_SendData1(USART_TypeDef* USARTx, uint8_t* data, uint32_t length);
 int USART_ReceiveData(USART_TypeDef* USARTx);
 void USART_SendBreak(USART_TypeDef* USARTx);
 void USART_SetGuardTime(USART_TypeDef* USARTx, uint8_t USART_GuardTime);

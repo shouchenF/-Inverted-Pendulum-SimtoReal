@@ -104,7 +104,7 @@ void oled_show(void)
 	//=============第五行显示电压和目标位置=======================//			
 			OLED_ShowString(80,40,"T:");	  
 //			OLED_ShowNumber(95,40,Position_Zero,5,12) ; 
-      int action_show = (int)(action * 100);
+      int action_show = (int)(action);
       OLED_ShowNumber(95,40,action_show,5,12) ; 
 			OLED_ShowString(00,40,"VOL:");
 			OLED_ShowString(41,40,".");
@@ -130,17 +130,21 @@ void oled_show(void)
 **************************************************************************/
 void DataScope(void)
 {   
-		DataScope_Get_Channel_Data( Adc, 1 );      
-		DataScope_Get_Channel_Data( Encoder, 2 );         
-		DataScope_Get_Channel_Data( 0, 3 );              
-		  DataScope_Get_Channel_Data(motor_position , 4);   
-		  DataScope_Get_Channel_Data(motor_velocity, 5 ); //用您要显示的数据替换0就行了
-		  DataScope_Get_Channel_Data(sensor_position , 6 );//用您要显示的数据替换0就行了
-	   	DataScope_Get_Channel_Data(sensor_velocity, 7 );
+		DataScope_Get_Channel_Data( motor_position, 1 );      
+		DataScope_Get_Channel_Data( motor_velocity, 2 );         
+//		DataScope_Get_Channel_Data( sensor_position, 3 );              
+//		DataScope_Get_Channel_Data(sensor_velocity , 4);   
+//	DataScope_Get_Channel_Data( Adc, 1 );      
+//	DataScope_Get_Channel_Data( Encoder, 2 );         
+//	DataScope_Get_Channel_Data( 0, 3 );              
+//	DataScope_Get_Channel_Data(motor_position , 4);   
+//		DataScope_Get_Channel_Data(motor_velocity, 5 ); //用您要显示的数据替换0就行了
+//		DataScope_Get_Channel_Data(sensor_position , 6 );//用您要显示的数据替换0就行了
+//		DataScope_Get_Channel_Data(sensor_velocity, 7 );
 //		DataScope_Get_Channel_Data( 0, 8 ); 
 //		DataScope_Get_Channel_Data(0, 9 );  
 //		DataScope_Get_Channel_Data( 0 , 10);
-//		Send_Count = DataScope_Data_Generate(3);
+//		Send_Count = DataScope_Data_Generate(4);
 //		for( i = 0 ; i < Send_Count; i++) 
 //		{
 //		while((USART1->SR&0X40)==0);  
