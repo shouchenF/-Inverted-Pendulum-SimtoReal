@@ -105,11 +105,12 @@ int TIM1_UP_IRQHandler(void)
 		data_array[5] = ((int)Adc >> 8) & 0xFF;
 		data_array[6] =  0x56;
 		data_array[7] =  0x78;
-		for(uint8_t  i = 0 ; i < 8; i++)
-			{
-				USART_SendData(USART1, *(data_array + i));
-        while(USART_GetFlagStatus(USART1,USART_FLAG_TC)==RESET);  
-			}
+		usart1_dma_tx_data(data_array, 8);
+//		for(uint8_t  i = 0 ; i < 8; i++)
+//			{
+//				USART_SendData(USART1, *(data_array + i));
+//        while(USART_GetFlagStatus(USART1,USART_FLAG_TC)==RESET);  
+//			}
 	
 
 /************** 串口发送数据方式三： 串口传输数据打包-16进制传输（整型和浮点型） **********************/		

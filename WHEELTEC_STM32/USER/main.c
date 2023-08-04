@@ -53,6 +53,7 @@ int main(void)
 	Adc_Init();                     								//=====角位移传感器模拟量采集初始化
 	Timer1_Init(49,7199);           								//=====定时中断初始化 
 
+
   while(1)
 	{
 //		sprintf(data_str, "motor_position=%-8.4f; sensor_position=%-8.4f; motor_velocity=%-8.4f; sensor_velocity=%-8.4f;\n", motor_position, sensor_position, motor_velocity, sensor_velocity);

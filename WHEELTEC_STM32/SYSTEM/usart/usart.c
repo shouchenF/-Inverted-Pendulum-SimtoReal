@@ -7,8 +7,8 @@ uint16_t Res;
 float action;
 uint16_t check_flag;
 
-#define USART1_RX_BUFF_MAX_LENTH 256    //定义最大接收字节数 200
-#define USART1_TX_BUFF_MAX_LENTH 256
+#define USART1_RX_BUFF_MAX_LENTH 200    //定义最大接收字节数 200
+#define USART1_TX_BUFF_MAX_LENTH 200
 
 uint8_t ReceiveBuff[RECEIVEBUFF_SIZE];
 static uint8_t usart1_tx_buff[USART1_TX_BUFF_MAX_LENTH];
@@ -112,100 +112,101 @@ void uart_init(u32 bound){
 }
 
 
-//static void usart1_dma_tx_init(void)
-//{
-//    DMA_InitTypeDef DMA_InitStructure;
-//    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
-//    DMA_DeInit(DMA1_Channel4);
-//    DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&USART1->DR;
-//    DMA_InitStructure.DMA_MemoryBaseAddr = (u32)usart1_tx_buff;
-//    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;
-//    DMA_InitStructure.DMA_BufferSize = 0;/*避免初始化发送数据，设置为0*/
-//    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-//    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
-//    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
-//    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
-//    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
-//    DMA_InitStructure.DMA_Priority = DMA_Priority_High;
-//    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
-//    DMA_Init(DMA1_Channel4, &DMA_InitStructure);
-//    USART_DMACmd(USART1, USART_DMAReq_Tx, ENABLE);
-//    DMA_Cmd(DMA1_Channel4, ENABLE);
-//}
+static void usart1_dma_tx_init(void)
+{
+    DMA_InitTypeDef DMA_InitStructure;
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+    DMA_DeInit(DMA1_Channel4);
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&USART1->DR;
+    DMA_InitStructure.DMA_MemoryBaseAddr = (u32)usart1_tx_buff;
+    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;
+    DMA_InitStructure.DMA_BufferSize = 0;/*避免初始化发送数据，设置为0*/
+    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;
+    DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;
+    DMA_Init(DMA1_Channel4, &DMA_InitStructure);
+    USART_DMACmd(USART1, USART_DMAReq_Tx, ENABLE);
+    DMA_Cmd(DMA1_Channel4, ENABLE);
+}
+// 用于通过DMA传输数据到USART1的发送寄存器
+uint8_t usart1_dma_tx_data(void* buffer, uint16_t data_lenth)
+{
+	if(data_lenth < 1)// 判断长度是否有效
+	{
+		return ERROR;
+	}
+	
+	while (DMA_GetCurrDataCounter(DMA1_Channel4));// 检查DMA发送通道内是否还有数据
+	if(NULL == buffer)//指针判空
+	{
+		return ERROR;
+	}
+	
+	USART1_state.txc = RESET; // 表示发送未完成。
+	// 使用memcpy函数将buffer中的数据复制到usart1_tx_buff中。
+	// 复制的长度为data_lenth和USART1_TX_BUFF_MAX_LENTH中较小的值。这是为了防止数据溢出。
+	memcpy(usart1_tx_buff, buffer,((data_lenth > USART1_TX_BUFF_MAX_LENTH) ? USART1_TX_BUFF_MAX_LENTH:data_lenth));
+	
+    DMA_Cmd(DMA1_Channel4, DISABLE); //DMA发送数据-要先关 ,以确保设置发送长度之前DMA传输已经停止。
+    DMA_SetCurrDataCounter(DMA1_Channel4, data_lenth);// 设置DMA1_Channel4的发送长度为data_lenth。
+    DMA_Cmd(DMA1_Channel4, ENABLE);// 启用DMA1_Channel4，以启动DMA传输
+	
+	return SUCCESS;
+}
 
-//uint8_t usart1_dma_tx_data(void* buffer, uint16_t data_lenth)
-//{
-//	if(data_lenth < 1)// 判断长度是否有效
-//	{
-//		return ERROR;
-//	}
-//	
-//	while (DMA_GetCurrDataCounter(DMA1_Channel4));// 检查DMA发送通道内是否还有数据
-//	if(NULL == buffer)//指针判空
-//	{
-//		return ERROR;
-//	}
-//	
-//	USART1_state.txc = RESET;
-//	
-//	memcpy(usart1_tx_buff, buffer,((data_lenth > USART1_TX_BUFF_MAX_LENTH) ? USART1_TX_BUFF_MAX_LENTH:data_lenth));
-//	
-//    DMA_Cmd(DMA1_Channel4, DISABLE); //DMA发送数据-要先关 设置发送长度 开启DMA
-//    DMA_SetCurrDataCounter(DMA1_Channel4, data_lenth);// 设置发送长度
-//    DMA_Cmd(DMA1_Channel4, ENABLE);// 启动DMA发送
-//	
-//	return SUCCESS;
-//}
 
+static void usart1_dma_rx_init(void)
+{
+    DMA_InitTypeDef DMA_InitStructure;
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
+    DMA_DeInit(DMA1_Channel5);
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&USART1->DR;           // 初始化外设地址
+    DMA_InitStructure.DMA_MemoryBaseAddr = (u32)usart1_rx_buff;            // 缓存地址
+    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;                     // 外设作为数据来源
+    DMA_InitStructure.DMA_BufferSize = USART1_RX_BUFF_MAX_LENTH;           // 缓存容量
+    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;       // 外设地址不递增
+    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                // 内存递增
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;// 外设字节宽度
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;        // 内存字节宽度
+    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;						   // 正常模式，即满了就不在接收了，而不是循环存储
+    DMA_InitStructure.DMA_Priority = DMA_Priority_High;                    // 优先级很高
+    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                           // 内存与外设通信，而非内存到内存
+    DMA_Init(DMA1_Channel5, &DMA_InitStructure);
+    USART_DMACmd(USART1, USART_DMAReq_Rx, ENABLE);
+    DMA_Cmd(DMA1_Channel5, ENABLE);
+}
 
-//static void usart1_dma_rx_init(void)
-//{
-//    DMA_InitTypeDef DMA_InitStructure;
-//    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_DMA1, ENABLE);
-//    DMA_DeInit(DMA1_Channel5);
-//    DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&USART1->DR;           // 初始化外设地址
-//    DMA_InitStructure.DMA_MemoryBaseAddr = (u32)usart1_rx_buff;            // 缓存地址
-//    DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;                     // 外设作为数据来源
-//    DMA_InitStructure.DMA_BufferSize = USART1_RX_BUFF_MAX_LENTH;           // 缓存容量
-//    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;       // 外设地址不递增
-//    DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;                // 内存递增
-//    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;// 外设字节宽度
-//    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;        // 内存字节宽度
-//    DMA_InitStructure.DMA_Mode = DMA_Mode_Normal;						   // 正常模式，即满了就不在接收了，而不是循环存储
-//    DMA_InitStructure.DMA_Priority = DMA_Priority_High;                    // 优先级很高
-//    DMA_InitStructure.DMA_M2M = DMA_M2M_Disable;                           // 内存与外设通信，而非内存到内存
-//    DMA_Init(DMA1_Channel5, &DMA_InitStructure);
-//    USART_DMACmd(USART1, USART_DMAReq_Rx, ENABLE);
-//    DMA_Cmd(DMA1_Channel5, ENABLE);
-//}
-
-//void USART1_IRQHandler(void)
-//{
-//    if(USART_GetITStatus(USART1, USART_IT_IDLE) != RESET)/*空闲中断接收*/
-//    {
-//        u8 data_lenth = 0 ;
-//		
-//        DMA_Cmd(DMA1_Channel5, DISABLE);// 关闭DMA ，防止干扰
-//				USART_ReceiveData( USART1 );
-//		
-//        data_lenth = USART1_RX_BUFF_MAX_LENTH - DMA_GetCurrDataCounter(DMA1_Channel5);//获得接收到的字节数
-//        DMA_SetCurrDataCounter(DMA1_Channel5, USART1_RX_BUFF_MAX_LENTH);//  重新赋值计数值，必须大于等于最大可能接收到的数据帧数目
-//        DMA_Cmd(DMA1_Channel5, ENABLE);
-//				USART1_state.rxc = SET;  //设置接收完成标志
-//		
-//				my_usmart_scan(usart1_rx_buff,data_lenth); //配置自己的接收处理函数//执行usmart扫描	
-//		
-//        memset(usart1_rx_buff, 0, USART1_RX_BUFF_MAX_LENTH); //清空接收缓存区		 
-//				USART_ClearITPendingBit(USART1, USART_IT_IDLE); // Clear IDLE interrupt flag bit
-//    }
-//		if(USART_GetITStatus(USART1,USART_IT_TC) != RESET)  //发送完成标记
-//		{
-//			DMA_Cmd(DMA1_Channel4, DISABLE);                // 关闭DMA
-//			DMA_SetCurrDataCounter(DMA1_Channel4,RESET);    // 清除数据长度
-//			USART1_state.txc = SET;                         // 设置发送完成标志
-//			USART_ClearITPendingBit(USART1, USART_IT_TC);   // 清除完成标记
-//		}	
-//}
+void USART1_IRQHandler(void)
+{
+    if(USART_GetITStatus(USART1, USART_IT_IDLE) != RESET)/*空闲中断接收*/
+    {
+        u8 data_lenth = 0 ;
+		
+        DMA_Cmd(DMA1_Channel5, DISABLE);// 关闭DMA ，防止干扰
+				USART_ReceiveData( USART1 );
+		
+        data_lenth = USART1_RX_BUFF_MAX_LENTH - DMA_GetCurrDataCounter(DMA1_Channel5);//获得接收到的字节数
+        DMA_SetCurrDataCounter(DMA1_Channel5, USART1_RX_BUFF_MAX_LENTH);//  重新赋值计数值，必须大于等于最大可能接收到的数据帧数目
+        DMA_Cmd(DMA1_Channel5, ENABLE);
+				USART1_state.rxc = SET;  //设置接收完成标志
+		
+				my_usmart_scan(usart1_rx_buff,data_lenth); //配置自己的接收处理函数//执行usmart扫描	
+		
+        memset(usart1_rx_buff, 0, USART1_RX_BUFF_MAX_LENTH); //清空接收缓存区		 
+				USART_ClearITPendingBit(USART1, USART_IT_IDLE); // Clear IDLE interrupt flag bit
+    }
+		if(USART_GetITStatus(USART1,USART_IT_TC) != RESET)  //发送完成标记
+		{
+			DMA_Cmd(DMA1_Channel4, DISABLE);                // 关闭DMA
+			DMA_SetCurrDataCounter(DMA1_Channel4,RESET);    // 清除数据长度
+			USART1_state.txc = SET;                         // 设置发送完成标志
+			USART_ClearITPendingBit(USART1, USART_IT_TC);   // 清除完成标记
+		}	
+}
 	 
 ///********************************************************
 //Function:   void my_usmart_scan(uint8_t * data_array,uint8_t data_lenth)
@@ -214,27 +215,25 @@ void uart_init(u32 bound){
 //Output:
 //Others:
 //*********************************************************/
-//void my_usmart_scan(uint8_t * data_array,uint8_t data_lenth)
-//{
-//	uint8_t sta,len;  
-//	if(SET == USART1_state.rxc)//串口接收完成？
-//	{					   
-//		len = data_lenth;	//得到此次接收到的数据长度
-//			if(data_array[0] == 0x2D && data_array[1] == 0x01 && data_array[5] == 0x56 && data_array[6] == 0x78) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
-//			{
-//				float value = 0;
-//				int16_t sign = 1;
-//					if(data_array[2] == 0x45)
-//					{
-//						sign = -1;
-//					}
-//					value = (data_array[4] << 8) + data_array[3];	
-//					action = sign * value;
-//		}																			
-//		USART1_state.rxc = RESET;//状态寄存器清空	    
-//	}	
-//}	 
-//	 
+void my_usmart_scan(uint8_t * data_array,uint8_t data_lenth)
+{
+	if(SET == USART1_state.rxc)//串口接收完成标志位
+	{					   
+			if(data_array[0] == 0x2D && data_array[1] == 0x01 && data_array[5] == 0x56 && data_array[6] == 0x78) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
+			{
+				float value = 0;
+				int16_t sign = 1;
+					if(data_array[2] == 0x45)
+					{
+						sign = -1;
+					}
+					value = (data_array[4] << 8) + data_array[3];	
+					action = sign * value;
+		}																			
+		USART1_state.rxc = RESET;//状态寄存器清空	    
+	}	
+}	 
+	 
 	 
 //// 奇偶校验
 //int16_t count_odd_numbers(int16_t a) // a:数据起始位，b:数据长度
@@ -274,64 +273,64 @@ void uart_init(u32 bound){
 //	{
 //	
 
-	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
-		{
-		Res = USART_ReceiveData(USART1);	//读取接收到的数据 0x2D，0x31，0x30，0x30，0x30，0x0D，0x0A
-		printf("%02X", Res);
-				if((USART_RX_STA&0x8000)==0)//接收未完成
-					{
-					if(USART_RX_STA&0x4000)//接收到了0x0D
-						{
-							if(Res!=0x0A){
-								USART_RX_STA=0;//接收错误,重新开始
-								memset(USART_RX_BUF,0,USART_REC_LEN);
-							}
-							else{
-								USART_RX_STA|=0x8000;	//接收完成了
-								
-//								check_flag = count_odd_numbers();
-//								USART_RX_BUF[1] = USART_RX_BUF[1] - '0';
-								if(USART_RX_BUF[0] == 0x2D && USART_RX_BUF[1] == 0x01 ) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
-								{
-									float value = 0;
-									int16_t sign = 1;
-										if(USART_RX_BUF[2] == 0x45)
-										{
-											sign = -1;
-										}
+//	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  //接收中断(接收到的数据必须是0x0d 0x0a结尾)
+//		{
+//		Res = USART_ReceiveData(USART1);	//读取接收到的数据 0x2D，0x31，0x30，0x30，0x30，0x0D，0x0A
+//		printf("%02X", Res);
+//				if((USART_RX_STA&0x8000)==0)//接收未完成
+//					{
+//					if(USART_RX_STA&0x4000)//接收到了0x0D
+//						{
+//							if(Res!=0x0A){
+//								USART_RX_STA=0;//接收错误,重新开始
+//								memset(USART_RX_BUF,0,USART_REC_LEN);
+//							}
+//							else{
+//								USART_RX_STA|=0x8000;	//接收完成了
+//								
+////								check_flag = count_odd_numbers();
+////								USART_RX_BUF[1] = USART_RX_BUF[1] - '0';
+//								if(USART_RX_BUF[0] == 0x2D && USART_RX_BUF[1] == 0x01 ) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
+//								{
+//									float value = 0;
+//									int16_t sign = 1;
+//										if(USART_RX_BUF[2] == 0x45)
+//										{
+//											sign = -1;
+//										}
 
-										  value = (USART_RX_BUF[4] << 8) + USART_RX_BUF[3];	
-			
-											action = sign * value;
-											USART_RX_STA = 0;	
-											memset(USART_RX_BUF,0,USART_REC_LEN);
-							}
-							else{
-								USART_RX_STA = 0;	
-								memset(USART_RX_BUF,0,USART_REC_LEN);
-							}
-						}								
-						}
-					else //还没收到0X0D
-						{	
-							if(Res==0x0D)
-								USART_RX_STA|=0x4000;
-							else
-								{					
-										USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
-										USART_RX_STA++;
-										if(USART_RX_STA>(USART_REC_LEN-1))
-										{
-											USART_RX_STA=0;//接收数据错误,重新开始接收
-											memset(USART_RX_BUF,0,USART_REC_LEN);
-										}					
-								}		 
-						}
-					}
+//										  value = (USART_RX_BUF[4] << 8) + USART_RX_BUF[3];	
+//			
+//											action = sign * value;
+//											USART_RX_STA = 0;	
+//											memset(USART_RX_BUF,0,USART_REC_LEN);
+//							}
+//							else{
+//								USART_RX_STA = 0;	
+//								memset(USART_RX_BUF,0,USART_REC_LEN);
+//							}
+//						}								
+//						}
+//					else //还没收到0X0D
+//						{	
+//							if(Res==0x0D)
+//								USART_RX_STA|=0x4000;
+//							else
+//								{					
+//										USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
+//										USART_RX_STA++;
+//										if(USART_RX_STA>(USART_REC_LEN-1))
+//										{
+//											USART_RX_STA=0;//接收数据错误,重新开始接收
+//											memset(USART_RX_BUF,0,USART_REC_LEN);
+//										}					
+//								}		 
+//						}
+//					}
 
-				 } 
-}
-	
+//				 } 
+//}
+//	
 
 //void USART1_IRQHandler(void)                	//串口1中断服务程序
 //	{
