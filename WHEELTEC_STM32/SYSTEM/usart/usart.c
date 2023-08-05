@@ -210,7 +210,32 @@ void USART1_IRQHandler(void)
 	 
 ///********************************************************
 //Function:   void my_usmart_scan(uint8_t * data_array,uint8_t data_lenth)
-//Description:处理接收数据
+//Description:处理接收数据-方式1
+//Input:
+//Output:
+//Others:
+//*********************************************************/
+//void my_usmart_scan(uint8_t * data_array,uint8_t data_lenth)
+//{
+//	if(SET == USART1_state.rxc)//串口接收完成标志位
+//	{					   
+//			if(data_array[0] == 0x2D && data_array[1] == 0x01 && data_array[5] == 0x56 && data_array[6] == 0x78) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
+//			{
+//				float value = 0;
+//				int16_t sign = 1;
+//					if(data_array[2] == 0x45)
+//					{
+//						sign = -1;
+//					}
+//					value = (data_array[4] << 8) + data_array[3];	
+//					action = sign * value;
+//		}																			
+//		USART1_state.rxc = RESET;//状态寄存器清空	    
+//	}	
+//}	 
+///********************************************************
+//Function:   void my_usmart_scan(uint8_t * data_array,uint8_t data_lenth)
+//Description:处理接收数据-方式2
 //Input:
 //Output:
 //Others:
@@ -219,21 +244,18 @@ void my_usmart_scan(uint8_t * data_array,uint8_t data_lenth)
 {
 	if(SET == USART1_state.rxc)//串口接收完成标志位
 	{					   
-			if(data_array[0] == 0x2D && data_array[1] == 0x01 && data_array[5] == 0x56 && data_array[6] == 0x78) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
+			if(data_array[0] == 0x2D && data_array[1] == 0x01 && data_array[6] == 0x56 && data_array[7] == 0x78) // 判断帧头是否正确、判断奇偶校验位是否正确 || USART_RX_BUF[1] == check_flag
 			{
-				float value = 0;
-				int16_t sign = 1;
-					if(data_array[2] == 0x45)
-					{
-						sign = -1;
-					}
-					value = (data_array[4] << 8) + data_array[3];	
-					action = sign * value;
+				unsigned char deal_array[sizeof(double)];
+				deal_array[0] = data_array[2];
+				deal_array[1] = data_array[3];
+				deal_array[2] = data_array[4];
+				deal_array[3] = data_array[5];
+				action = Byte2Float(deal_array);
 		}																			
 		USART1_state.rxc = RESET;//状态寄存器清空	    
 	}	
-}	 
-	 
+}	 	 
 	 
 //// 奇偶校验
 //int16_t count_odd_numbers(int16_t a) // a:数据起始位，b:数据长度

@@ -6,12 +6,7 @@ import re  # 提取文本中的特定类型字符
 import matplotlib.pyplot as plt
 from threading import Thread, Event
 sys.path.append("../..")
-import numpy as np
-import sys
-import serial
 import serial.tools.list_ports
-import time
-import binascii
 import serial  # 导入串口通信模块
 import time
 from highPrecTimer import Timer as HpTimer

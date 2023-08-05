@@ -29,9 +29,12 @@ u8 Swing_up=1; //用于标记手动起摆时，是否是第一次进入手动起
 
 // 将变量转换为字符串形式
 char data_str[200];
-unsigned char byteArry[sizeof(double)];
+unsigned char byteArry1[sizeof(double)];
+unsigned char byteArry2[sizeof(double)];
+unsigned char byteArry3[sizeof(double)];
+unsigned char byteArry4[sizeof(double)];
 uint8_t data[3]={0x12,0x04,0x06};
-uint8_t data_array[10];
+uint8_t data_array[20];
 //倾角PD控制所用到的参数
 float Bias;                       //倾角偏差
 float Last_Bias,D_Bias;    //PID相关变量
@@ -97,15 +100,15 @@ int TIM1_UP_IRQHandler(void)
 //		motor_velocity = 0.123;
 		
 /************** 串口发送数据方式二：传输数据打包-16进制传输（整型） **********************/		
-		data_array[0] =  0x12;
-		data_array[1] =  0x34;
-		data_array[2] = (int)Encoder & 0xFF;
-		data_array[3] = ((int)Encoder >> 8) & 0xFF;
-		data_array[4] = (int)Adc & 0xFF;
-		data_array[5] = ((int)Adc >> 8) & 0xFF;
-		data_array[6] =  0x56;
-		data_array[7] =  0x78;
-		usart1_dma_tx_data(data_array, 8);
+//		data_array[0] =  0x12;
+//		data_array[1] =  0x34;
+//		data_array[2] = (int)Encoder & 0xFF;
+//		data_array[3] = ((int)Encoder >> 8) & 0xFF;
+//		data_array[4] = (int)Adc & 0xFF;
+//		data_array[5] = ((int)Adc >> 8) & 0xFF;
+//		data_array[6] =  0x56;
+//		data_array[7] =  0x78;
+//		usart1_dma_tx_data(data_array, 8);
 //		for(uint8_t  i = 0 ; i < 8; i++)
 //			{
 //				USART_SendData(USART1, *(data_array + i));
@@ -114,18 +117,60 @@ int TIM1_UP_IRQHandler(void)
 	
 
 /************** 串口发送数据方式三： 串口传输数据打包-16进制传输（整型和浮点型） **********************/		
-//    FloatToByte(motor_velocity, byteArry); // 8个字节数据
+//    FloatToByte(pc_fil, byteArry1); // 8个字节数据
+//		FloatToByte(vc_fil, byteArry2); // 8个字节数据
 //		data_array[0] =  0x12;  // 帧头1
 //		data_array[1] =  0x34;  // 帧头2
-//		data_array[2] = (int)motor_position & 0xFF;          // 电机位置低字节
-//		data_array[3] = ((int)motor_position >> 8) & 0xFF;   // 电机位置高字节
+//		data_array[2] = byteArry1[0];   // 电机位置低字节
+//		data_array[3] = byteArry1[1];   // 电机位置高字节
+//		data_array[4] = byteArry1[2];   // 电机位置低字节
+//		data_array[5] = byteArry1[3];   // 电机位置高字节
 //		/*电机速度为浮点型数据，将其十进制数转换为单精度浮点数是4个字节（32位），转换网站：http://www.styb.cn/cms/ieee_754.php*/
-//		data_array[4] = byteArry[0];							// 电机速度低字节		
-//		data_array[5] = byteArry[1];				// 电机速度高字节	
-//		data_array[6] = byteArry[2];							// 电机速度低字节		
-//		data_array[7] = byteArry[3];				// 电机速度高字节	
-//		data_array[8] =  0x56;  // 帧尾1
-//		data_array[9] =  0x78;  // 帧尾2
+//		data_array[6] = byteArry2[0];							// 电机速度低字节		
+//		data_array[7] = byteArry2[1];				// 电机速度高字节	
+//		data_array[8] = byteArry2[2];							// 电机速度低字节		
+//		data_array[9] = byteArry2[3];				// 电机速度高字节	
+//		data_array[10] =  0x56;  // 帧尾1
+//		data_array[11] =  0x78;  // 帧尾2
+//		usart1_dma_tx_data(data_array, 12);
+//		for(uint8_t  i = 0 ; i < sizeof(data_array); i++)
+//			{
+//				USART_SendData(USART1, *(data_array + i));
+//        while(USART_GetFlagStatus(USART1,USART_FLAG_TC)==RESET);  
+//			}
+
+/************** 串口发送数据方式三： 串口传输数据打包-16进制传输（电机和编码器信息浮点型） **********************/		
+    FloatToByte(pc_fil, byteArry1); // 8个字节数据
+		FloatToByte(vc_fil, byteArry2); // 8个字节数据
+		FloatToByte(ec_fil, byteArry3); // 8个字节数据
+		FloatToByte(wc_fil, byteArry4); // 8个字节数据
+		data_array[0] =  0x12;  // 帧头1
+		data_array[1] =  0x34;  // 帧头2
+		
+		data_array[2] = byteArry1[0];   // 电机位置低字节
+		data_array[3] = byteArry1[1];   // 电机位置高字节
+		data_array[4] = byteArry1[2];   // 电机位置低字节
+		data_array[5] = byteArry1[3];   // 电机位置高字节
+		
+		/*电机速度为浮点型数据，将其十进制数转换为单精度浮点数是4个字节（32位），转换网站：http://www.styb.cn/cms/ieee_754.php*/
+		data_array[6] = byteArry2[0];							// 电机速度低字节		
+		data_array[7] = byteArry2[1];				// 电机速度高字节	
+		data_array[8] = byteArry2[2];							// 电机速度低字节		
+		data_array[9] = byteArry2[3];				// 电机速度高字节	
+		
+		data_array[10] = byteArry3[0];							// 电机速度低字节		
+		data_array[11] = byteArry3[1];				// 电机速度高字节	
+		data_array[12] = byteArry3[2];							// 电机速度低字节		
+		data_array[13] = byteArry3[3];				// 电机速度高字节	
+		
+		data_array[14] = byteArry4[0];							// 电机速度低字节		
+		data_array[15] = byteArry4[1];				// 电机速度高字节	
+		data_array[16] = byteArry4[2];							// 电机速度低字节		
+		data_array[17] = byteArry4[3];				// 电机速度高字节	
+		
+		data_array[18] =  0x56;  // 帧尾1
+		data_array[19] =  0x78;  // 帧尾2
+		usart1_dma_tx_data(data_array, 20);
 //		for(uint8_t  i = 0 ; i < sizeof(data_array); i++)
 //			{
 //				USART_SendData(USART1, *(data_array + i));
