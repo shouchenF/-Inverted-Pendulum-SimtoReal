@@ -1,25 +1,15 @@
 import struct
 
-from stable_baselines3 import PPO
-import hydra
-import torch
 import sys
-import re  # 提取文本中的特定类型字符
-import matplotlib.pyplot as plt
-from threading import Thread, Event
 
-
-
-sys.path.append("../..")
-import numpy as np
+sys.path.append("../../..")
 
 import serial  # 导入串口通信模块
-import time
-from highPrecTimer import Timer as HpTimer
+from until.highPrecTimer import Timer as HpTimer
 import csv
 global result, action_
 
-f = open('action.csv', 'w', encoding='utf-8', newline='')
+f = open('../plot_data/action.csv', 'w', encoding='utf-8', newline='')
 csv_writer = csv.writer(f)
 
 Bias = 0.0

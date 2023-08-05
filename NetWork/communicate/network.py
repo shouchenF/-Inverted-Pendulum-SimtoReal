@@ -1,21 +1,19 @@
 from stable_baselines3 import PPO
-import hydra
 import torch
 import sys
 import re  # 提取文本中的特定类型字符
 import matplotlib.pyplot as plt
-from threading import Thread, Event
-sys.path.append("../..")
-import numpy as np
+
+sys.path.append("../../..")
 
 import serial  # 导入串口通信模块
 import time
-from highPrecTimer import Timer as HpTimer
+from until.highPrecTimer import Timer as HpTimer
 import csv
 global result, action_
 result = [0.0, 0.0, 0.0, 0.0]
 action_ = 0
-f = open('action.csv', 'w', encoding='utf-8', newline='')
+f = open('../plot_data/action.csv', 'w', encoding='utf-8', newline='')
 csv_writer = csv.writer(f)
 def task():
     ax = []  # 定义一个 x 轴的空列表用来接收动态的数据
@@ -61,7 +59,7 @@ def run_play():
     last_result = [0.0, 0.0, 0.0, 0.0]
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    policy_net = PPO.load("./ppo_pen_51200.zip")
+    policy_net = PPO.load("../network_data/ppo_pen_51200.zip")
 
     ser = serial.Serial(  # 下面这些参数根据情况修改
         port='COM8',  # 串口

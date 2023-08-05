@@ -186,12 +186,12 @@ int TIM1_UP_IRQHandler(void)
 //			}
 
 
-//		Moto = action;
-//		float a = _bndf(action,-0.7f,0.7f);
+		Moto = action;
+		float a = _bndf(action,-0.7f,0.7f);
 //		Moto = my_Position(a,pc_fil);
-//    Moto = my_velocity(a ,vc_fil);
+    Moto = my_velocity(a ,vc_fil);
 //		Xianfu_Pwm();		 
-		Set_Pwm(action);
+		Set_Pwm(Moto);
 	//自动起摆步骤1中的滑块边缘保护
 //		if(Encoder>10000||Encoder<=6100)
 //			Set_Pwm(0);	

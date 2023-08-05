@@ -1,21 +1,50 @@
 import struct
-
+from threading import Thread
 from stable_baselines3 import PPO
 import torch
 import sys
-import re  # 提取文本中的特定类型字符
 
-sys.path.append("../..")
+sys.path.append("../../..")
 import serial.tools.list_ports
 import serial  # 导入串口通信模块
-import time
-
+import matplotlib.pyplot as plt
 global result, action_
-global modecmd1, modecmd2, modecmd3
+from until.highPrecTimer import Timer as HpTimer
 
-import Sensor
+from until import Sensor
+import csv
+f = open('./plot_data/action.csv', 'w', encoding='utf-8', newline='')
+csv_writer = csv.writer(f)
 
 
+def task():
+    ax = []  # 定义一个 x 轴的空列表用来接收动态的数据
+    ypt = []  # 定义一个 y 轴的空列表用来接收动态的数据
+    ypc = []  # 定义一个 y 轴的空列表用来接收动态的数据
+    yvc = []  # 定义一个 y 轴的空列表用来接收动态的数据
+    yac = []  # 定义一个 y 轴的空列表用来接收动态的数据
+    ywc = []  # 定义一个 y 轴的空列表用来接收动态的数据
+    plt.ion()  # 开启一个画图的窗口
+    delay_us = 50 * 1000
+    tic = HpTimer(delay_us)
+    for i in range(100000):  # 遍历0-99的值
+        tic.waiting()
+        # time.sleep(0.050)
+        ax.append(i) # 添加 i 到 x 轴的数据中
+        ypt.append(action_)  # 添加 i 的平方到 y 轴的数据中
+        ypc.append(result[0])  # 添加 i 的平方到 y 轴的数据中
+        yac.append(result[1])  # 添加 i 的平方到 y 轴的数据中
+        yvc.append(result[2])  # 添加 i 的平方到 y 轴的数据中
+        ywc.append(result[3])  # 添加 i 的平方到 y 轴的数据中
+        plt.clf()  # 清除之前画的图
+        plt.plot(ax, ypt, 'k')  # 画出当前 ax 列表和 ay 列表中的值的图形
+        plt.plot(ax, ypc, 'r')  # 画出当前 ax 列表和 ay 列表中的值的图形
+        plt.plot(ax, yac, 'b')  # 画出当前 ax 列表和 ay 列表中的值的图形
+        plt.plot(ax, yvc, 'm')  # 画出当前 ax 列表和 ay 列表中的值的图形
+        plt.plot(ax, ywc, 'g')  # 画出当前 ax 列表和 ay 列表中的值的图形
+        plt.pause(0.001)  # 暂停一秒
+        plt.ioff()  # 关闭画图的窗口
+        plt.savefig('plot.svg')  # 保存当前绘图为图片文件
 
 
 def CRC16(data, length):
@@ -161,11 +190,13 @@ def read_serial_two_data_encoder_position_velocity(ser, abs):
 def run_play():
     result1 = [0.0, 0.0]
     result2 = [0.0, 0.0]
+    global result, action_
     result = [0.0, 0.0, 0.0, 0.0]
+    action_ = 0
     absence = Sensor.ABSENC()
     action_send = bytearray([0x12, 0x34, 0x00, 0x00, 0x00, 0x00, 0x56, 0x78])
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    policy_net = PPO.load("./ppo_pen_51200.zip")
+    policy_net = PPO.load("./network_data/ppo_pen_51200.zip")
     ser1 = serial.Serial(  # 下面这些参数根据情况修改
         port='COM8',  # 串口
         baudrate=921600,  # 波特率
@@ -191,8 +222,10 @@ def run_play():
     #     print("ser2 open success")
     # else:
     #     print("ser2 Open Fail")
-
+    delay_us = 5 * 1000
+    tic = HpTimer(delay_us)
     while True:
+        tic.waiting()
         ########## 1、 接收倒立摆的状态信息 ##############
         result1 = read_serial_all_data_position_velocity(ser1)
         print(result1)
@@ -203,7 +236,6 @@ def run_play():
         obs = torch.tensor(result, dtype=torch.float32).to(device)
         action = policy_net.predict(obs)
         action_ = -0.70 + (0.5 * (action[0][0] + 1.0) * (0.70 - (-0.70)))
-        action_ = -2.87
         bytes_array = FloatToByte(action_)  # 十进制转换成单精度浮点数
         # # # 将action转化成字符串
         action_send[0] = 0x2D  # 帧头
@@ -215,10 +247,13 @@ def run_play():
         action_send[6] = 0x56  # 0x56是十六进制表示法，表示的是十进制数值86。而V是英文字母，它在ASCII码中的十进制表示是86。所以，0x56和V表示的是同一个字符。
         action_send[7] = 0x78  # 0x78是十六进制表示法，表示的是十进制数值120。而x是英文字母，它在ASCII码中的十进制表示是120。所以，0x78和x表示的是同一个字符。
         print(action_send)
+        csv_writer.writerow([action_, result[0], result[1], result[2], result[3]])
         ser1.write(action_send)  # 使用DMA需要多个字节一起发送
         # ######### 3、 发送神经网络输出的动作信息 ###########
         # send_data(ser2, action[0][0])
 
 
 if __name__ == '__main__':
+    t = Thread(target=task, args=())
+    t.start()
     run_play()

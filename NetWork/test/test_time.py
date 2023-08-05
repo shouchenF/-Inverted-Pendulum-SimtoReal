@@ -1,8 +1,7 @@
 # -*- coding:utf-8 -*-
 # 测试用代码
 import time
-import ctypes
-from highPrecTimer import Timer as HpTimer
+from until.highPrecTimer import Timer as HpTimer
 delay_us = 10*1000
 tic = HpTimer(delay_us)
 for i in range(100):
